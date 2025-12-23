@@ -1,3 +1,4 @@
 beeai-framework
 feedparser
+markdown
 python-dotenv==1.0.1

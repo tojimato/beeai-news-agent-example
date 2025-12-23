@@ -44,7 +44,7 @@ async def run_strategic_intelligence():
     
     # 1. Groq Backend Setup via env.local
     # Groq API anahtarını kütüphane otomatik çevre değişkenlerinden okur.
-    llm = await ChatModel.from_name(
+    llm = ChatModel.from_name(
         config.GROQ_MODEL_NAME, 
         ChatModelParameters(temperature=0)
     )
