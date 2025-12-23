@@ -1,0 +1,8 @@
+myenv/ 
+db/
+coding/
+crewai-rag-*
+__pycache__/ 
+*.pyc 
+.env
+.env.local
