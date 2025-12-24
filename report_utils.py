@@ -1,12 +1,12 @@
 import markdown
-import os, datetime
+import os
+from datetime import datetime
 
 def save_as_html(md_text, task_name="Strategic_Report"):
+    
     """Markdown raporunu şık bir HTML dosyasına dönüştürür."""
-    # Markdown'u HTML'e çevir (tablo desteğiyle)
     html_content = markdown.markdown(md_text, extensions=['tables', 'fenced_code'])
     
-    # Şık bir CSS ekleyelim (Modern Yazılım Evi Teması)
     styled_html = f"""
     <html>
     <head>
@@ -28,7 +28,7 @@ def save_as_html(md_text, task_name="Strategic_Report"):
     </html>
     """
     
-    filename = f"reports/{task_name}_{datetime.now().strftime('%Y%m%d')}.html"
+    filename = f"reports/{task_name}_{datetime.now().strftime('%Y%m%d_%f')}.html"
     os.makedirs('reports', exist_ok=True)
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(styled_html)

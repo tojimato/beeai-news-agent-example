@@ -17,8 +17,8 @@ def log_token_usage(run_output, task_name="Strategy_Analysis"):
     """
     
     # 1. Usage bilgilerini al (Objeden doğrudan çekiyoruz)
-    usage = getattr(run_output, 'usage', None)
-    cost = getattr(run_output, 'cost', None)
+    usage = getattr(run_output.state, 'usage', None)
+    cost = getattr(run_output.state, 'cost', None)
     
     # Verileri ayıkla (Çıktına göre eşleşen alanlar)
     prompt_t = usage.prompt_tokens if usage else 0
@@ -52,3 +52,37 @@ def log_token_usage(run_output, task_name="Strategy_Analysis"):
     logging.info(json.dumps(log_data))
     
     return log_data
+
+def summarize_total_usage(*run_outputs):
+    """
+    Birden fazla ajandan gelen çıktıları toplar, ekrana formatlı basar 
+    ve toplam token sayısını döndürür.
+    """
+    total_tokens = 0
+    total_cost = 0.0
+    
+    print("\n" + "═"*45)
+    print("📈 AGGREGATED USAGE SUMMARY")
+    print("─"*45)
+
+    for i, output in enumerate(run_outputs, 1):
+        # log_token_usage içinde kullandığın erişim mantığının aynısı
+        usage = getattr(output.state, 'usage', None)
+        cost = getattr(output.state, 'cost', None)
+
+        if usage:
+            t_tokens = usage.total_tokens
+            t_cost = cost.total_cost_usd if cost else 0.0
+            
+            total_tokens += t_tokens
+            total_cost += t_cost
+            
+            print(f" Agent {i:02d} | Tokens: {t_tokens:6} | Cost: ${t_cost:.6f}")
+        else:
+            print(f" Agent {i:02d} | ⚠️ No usage data found.")
+
+    print("─"*45)
+    print(f" TOTAL    | Tokens: {total_tokens:6} | Cost: ${total_cost:.6f}")
+    print("═"*45 + "\n")
+
+    return total_tokens

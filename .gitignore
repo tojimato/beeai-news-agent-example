@@ -1,5 +1,6 @@
 myenv/ 
 db/
+reports/
 coding/
 crewai-rag-*
 __pycache__/ 
