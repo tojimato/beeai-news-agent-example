@@ -38,8 +38,7 @@ def log_token_usage(run_output, task_name="Strategy_Analysis"):
             "total": total_t,
             "cached": cached_t
         },
-        "cost_usd": total_cost,
-        "model": config.GROQ_MODEL_NAME
+        "cost_usd": total_cost
     }
     
     # Konsola profesyonel özet bas

@@ -18,8 +18,8 @@ from report_utils import save_as_html
 
 class StrategicConsultant:
     # --- CONFIGURATION
-    MAX_ENTRIES_PER_SOURCE = 5
-    MAX_SUMMARY_WORDS = 50  # Kelime bazlı kısıtlama (daha anlamlı kesitler için)
+    MAX_ENTRIES_PER_SOURCE = 3
+    MAX_SUMMARY_WORDS = 30  # Kelime bazlı kısıtlama (daha anlamlı kesitler için)
     RSS_SOURCES = {
         "McKinsey_Insights": "https://www.mckinsey.com/insights/rss",
         "Forrester_Strategy": "https://www.forrester.com/blogs/feed/",
@@ -29,57 +29,49 @@ class StrategicConsultant:
     
     def __init__(self):
         self.llm = ChatModel.from_name(
-            config.GROQ_MODEL_NAME, 
+            config.OPENAI_CHEAPEST_MODEL, 
             ChatModelParameters(temperature=0.2) # Analiz için hafif yaratıcılık
         )
         self.translator_llm = ChatModel.from_name(
-            config.GROQ_MODEL_NAME, 
+            config.OPENAI_TRANSLATOR_MODEL, 
             ChatModelParameters(temperature=0) # Çeviri için sıfır sapma
         )
 
     # --- PROMPT MANAGEMENT ---
     def get_strategic_instructions(self):
-        """İngilizce Stratejik Analiz Talimatları"""
-        return """You are a High-Level Strategic Advisor for a solo entrepreneur and software consultant.
-        Your goal is to synthesize tech trends with global macro-investments.
-        
-        Focus areas:
-        1. Software Industry: High ROI niches for a solo developer.
-        2. Macro Investments: Gold, Silver, Crypto (BTC/ETH focus), and Tech Stocks (NVDA, TSLA, etc.).
-        3. Resource Management: How to allocate personal capital and time for maximum compounding.
-        
-        Methodology: Be cynical, data-driven, and prioritize liquidity and low-overhead operations."""
+        """Token-optimized Strategic Instructions"""
+        return """You are a lean Strategic Advisor for a solo dev. 
+        Analyze tech trends and macro-investments (Gold, Silver, Crypto, Tech Stocks).
+        Methodology: Data-driven, cynical, focus on high-yield/low-overhead.
+        Output: Professional, condensed, and actionable. No fluff."""
 
     def get_analysis_prompt(self, data):
+        """Token-optimized Analysis Prompt"""
         return f"""
-        Conduct an IN-DEPTH Strategic Briefing for Q1 2026.
-        
-        DATA INPUT:
-        {data}
+        Q1 2026 Strategic Briefing.
+        Input Data: {data}
 
-        STRUCTURE & REQUIREMENTS:
-        1. EXECUTIVE SUMMARY: A high-level overview of the current state of the market.
-        2. STRATEGIC PILLARS: 
-        - Identify 3 distinct pillars. 
-        - For each, provide a 'Why it matters' (trend analysis) and 'Implementation' (how to do it).
-        3. INVESTMENT PORTFOLIO:
-        - Specific tactical moves for Gold, Silver, Crypto (BTC/ETH/Solana), and Tech Stocks.
-        - Risk/Reward ratio for each asset.
-        4. SOLO-PRENEUR ACTION PLAN:
-        - A step-by-step 90-day roadmap.
-        5. DATA SOURCES: 
-        - Explicitly list the URLs and sources used.
+        Requirements:
+        1. MARKET SUMMARY: 2-3 sentences max on current sentiment.
+        2. PILLARS: 3 tech niches for solo-devs. Format: 'Niche | Why | Action'.
+        3. PORTFOLIO: A Markdown Table for Gold, Silver, BTC, and Tech Stocks with 'Asset | Strategy | Risk'.
+        4. 90-DAY ROADMAP: 5 bullet points for immediate execution.
+        5. SOURCES: List URLs only.
 
-        CRITICAL: Do not provide short answers. Be verbose, technical, and use Markdown Tables for comparisons.
+        Constraint: Be concise. Avoid introductory phrases. Use Markdown tables/bullets.
         Language: Professional English.
         """
 
     def get_translation_instructions(self):
-        """Çeviri Ajanı Talimatları"""
-        return """You are a professional financial and technical translator. 
-        Translate the given English strategic report into Turkish. 
-        Maintain the professional tone, preserve technical terms (in parentheses if necessary), 
-        and ensure the formatting (Markdown) remains intact."""
+        """Markdown skeleton preserving instructions"""
+        return """You are a technical translator. Your ONLY task is to translate English text to Turkish while strictly preserving Markdown syntax.
+        
+        RULES:
+        1. DO NOT modify Markdown structures: keep tables (|---|), headers (#, ##), and bolding (**) exactly as they are.
+        2. DO NOT add extra spaces inside table cells that could break the alignment.
+        3. Translate the content inside the table cells, but keep the pipes (|) intact.
+        4. Keep technical financial terms in parentheses: e.g., 'Liquidity (Likidite)'.
+        5. Output ONLY the translated Markdown. No conversational filler."""
     
     def _truncate_by_words(self, text, limit):
         """Metni kelime sayısına göre keser."""
@@ -154,7 +146,7 @@ class StrategicConsultant:
             instructions=self.get_strategic_instructions(),
             middlewares=[GlobalTrajectoryMiddleware(included=[Tool])],
             requirements=[
-                ConditionalRequirement(ThinkTool, min_invocations=2,  max_invocations=3) 
+                ConditionalRequirement(ThinkTool, min_invocations=1,  max_invocations=2) 
             ]
         )
 
