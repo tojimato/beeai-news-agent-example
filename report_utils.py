@@ -28,7 +28,7 @@ def save_as_html(md_text, task_name="Strategic_Report"):
     </html>
     """
     
-    filename = f"reports/{task_name}_{datetime.now().strftime('%Y%m%d_%f')}.html"
+    filename = f"reports/{task_name}.html"
     os.makedirs('reports', exist_ok=True)
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(styled_html)
