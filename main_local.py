@@ -23,7 +23,7 @@ from report_utils import save_as_html
 class StrategicConsultant:
     # --- CONFIGURATION
     MAX_FEED_SEARCH = 15
-    MAX_ENTRIES_PER_SOURCE = 5
+    MAX_ENTRIES_PER_SOURCE = 3
     MAX_SUMMARY_WORDS = 100
     RSS_SOURCES = {
         "McKinsey_Insights": "https://www.mckinsey.com/insights/rss",
@@ -35,12 +35,12 @@ class StrategicConsultant:
     def __init__(self):
         # Analiz için biraz daha esnek parametreler
         self.llm = ChatModel.from_name(
-            config.OPENAI_CHEAPEST_MODEL, 
+            config.GROQ_STRATEGY_MODEL, 
             ChatModelParameters(temperature=0.2),
         )
         # Çeviri ve Formatlama için sıfır hata toleransı
         self.translator_llm = ChatModel.from_name(
-            config.OPENAI_CHEAPEST_MODEL, 
+            config.GROQ_STRATEGY_MODEL, 
             ChatModelParameters(temperature=0),
         )
 
