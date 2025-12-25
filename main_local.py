@@ -33,45 +33,48 @@ class StrategicConsultant:
             ChatModelParameters(temperature=0.2) # Analiz için hafif yaratıcılık
         )
         self.translator_llm = ChatModel.from_name(
-            config.OPENAI_TRANSLATOR_MODEL, 
+            config.OPENAI_CHEAPEST_MODEL, 
             ChatModelParameters(temperature=0) # Çeviri için sıfır sapma
         )
 
     # --- PROMPT MANAGEMENT ---
     def get_strategic_instructions(self):
-        """Token-optimized Strategic Instructions"""
-        return """You are a lean Strategic Advisor for a solo dev. 
-        Analyze tech trends and macro-investments (Gold, Silver, Crypto, Tech Stocks).
-        Methodology: Data-driven, cynical, focus on high-yield/low-overhead.
-        Output: Professional, condensed, and actionable. No fluff."""
+        return """You are a Solo-Entrepreneur Business Consultant & Tech Analyst.
+        Your goal is to extract high-yield business opportunities for a solo software developer.
+        
+        FOCUS AREAS:
+        1. Micro-SaaS & AI Wrappers: Small, focused tools solving specific problems.
+        2. API-First Products: Tools that other developers can integrate.
+        3. Low-Overhead Niches: Sectors with high ROI and minimal infrastructure needs.
+        4. Macro-Investment Sync: How tech trends align with Gold, Silver, and Crypto.
+
+        OUTPUT: English, raw analytical insights, and specific 'Solo-Dev Opportunities'."""
 
     def get_analysis_prompt(self, data):
-        """Token-optimized Analysis Prompt"""
-        return f"""
-        Q1 2026 Strategic Briefing.
-        Input Data: {data}
-
-        Requirements:
-        1. MARKET SUMMARY: 2-3 sentences max on current sentiment.
-        2. PILLARS: 3 tech niches for solo-devs. Format: 'Niche | Why | Action'.
-        3. PORTFOLIO: A Markdown Table for Gold, Silver, BTC, and Tech Stocks with 'Asset | Strategy | Risk'.
-        4. 90-DAY ROADMAP: 5 bullet points for immediate execution.
-        5. SOURCES: List URLs only.
-
-        Constraint: Be concise. Avoid introductory phrases. Use Markdown tables/bullets.
-        Language: Professional English.
-        """
+        return f"""Analyze the provided news for Q1 2026. 
+        Specifically, identify 3 'Blue Ocean' business opportunities for a solo developer based on these trends.
+        
+        Data: {data}"""
 
     def get_translation_instructions(self):
-        """Markdown skeleton preserving instructions"""
-        return """You are a technical translator. Your ONLY task is to translate English text to Turkish while strictly preserving Markdown syntax.
+        """
+        Bu ajan hem çeviri yapar hem de Markdown yapısını (iskeleti) inşa eder.
+        """
+        return """You are a professional Financial Editor & Markdown Expert.
         
-        RULES:
-        1. DO NOT modify Markdown structures: keep tables (|---|), headers (#, ##), and bolding (**) exactly as they are.
-        2. DO NOT add extra spaces inside table cells that could break the alignment.
-        3. Translate the content inside the table cells, but keep the pipes (|) intact.
-        4. Keep technical financial terms in parentheses: e.g., 'Liquidity (Likidite)'.
-        5. Output ONLY the translated Markdown. No conversational filler."""
+        TASK:
+        1. Translate the provided analysis into Turkish.
+        2. Convert the content into a BEAUTIFUL Markdown report.
+        
+        STRUCTURE REQUIREMENTS:
+        - Use # for the main title.
+        - Use ## for sections like (Pazar Analizi, Solo Developer Fırsatları, Yatırım Portföyü).
+        - Use a Markdown TABLE for the Portfolio: | Varlık | Strateji | Risk Skoru |
+        - Use Bullet Points for the 90-day action plan.
+        - Highlight key terms with **bold**.
+        - Technical terms in (parentheses).
+
+        Output ONLY the final Markdown report in Turkish."""
     
     def _truncate_by_words(self, text, limit):
         """Metni kelime sayısına göre keser."""
@@ -138,47 +141,41 @@ class StrategicConsultant:
         # 1. Veri Hazırlığı
         raw_data = await self.fetch_feeds()
         
-        # 2. STRATEJİ AJANI (English Only)
+        # 2. ANALİZ ADIMI (Ham Veri İşleme)
         strategy_agent = RequirementAgent(
             llm=self.llm,
-            tools=[ThinkTool()],
             memory=UnconstrainedMemory(),
-            instructions=self.get_strategic_instructions(),
-            middlewares=[GlobalTrajectoryMiddleware(included=[Tool])],
-            requirements=[
-                ConditionalRequirement(ThinkTool, min_invocations=1,  max_invocations=2) 
-            ]
+            instructions=self.get_strategic_instructions()
         )
 
-        print("\n🧠 Strategy Agent is analyzing (English)...")
+        print("\n🧠 Analyzing data (Raw Analysis)...")
         strategy_response = await strategy_agent.run(self.get_analysis_prompt(raw_data))
-        english_report = strategy_response.last_message.text
-        log_token_usage(strategy_response, "Strategy Analysis")
-        
-        # 3. ÇEVİRİ AJANI (Translator Agent)
+        raw_analysis = strategy_response.last_message.text
+        log_token_usage(strategy_response, "Raw Analysis")
+
+        # 3. ÇEVİRİ VE FORMATLAMA ADIMI
+        # Burada doğrudan model çağrısı (Direct Call) veya 1 iterasyonluk ajan kullanıyoruz
         translator_agent = RequirementAgent(
             llm=self.translator_llm,
             memory=UnconstrainedMemory(),
             instructions=self.get_translation_instructions()
         )
 
-        print("🔠 Translator Agent is converting report to Turkish...")
-        translation_query = f"Please translate this report: \n\n{english_report}"
-        final_response = await translator_agent.run(translation_query, max_iterations = 1)
+        print("🔠 Formatting and Translating to Turkish...")
+        # Modele ham analizi verip "Bunu güzel bir rapora dönüştür" diyoruz
+        translation_query = f"Format and translate this analysis:\n\n{raw_analysis}"
+        final_response = await translator_agent.run(translation_query, max_iterations=1)
+        
         turkish_report = final_response.last_message.text
-        log_token_usage(final_response, "Translator Agent")
+        log_token_usage(final_response, "Translation & Formatting")
         
         # 4. KAYIT VE ÇIKTI
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:19]
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"Strategy_Report_TR_{timestamp}"
         html_file = save_as_html(turkish_report, filename)
         
-        # 5. SUMMARIZE USAGE
         summarize_total_usage(strategy_response, final_response)
-
-        print("\n" + "═"*60)
-        print(f"📄 Rapor Hazır: {os.path.abspath(html_file)}")
-        print("═"*60)
+        print(f"\n📄 Rapor Hazır: {os.path.abspath(html_file)}")
 
 # --- ENTRY POINT ---
 async def main():
