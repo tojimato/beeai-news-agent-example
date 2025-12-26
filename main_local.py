@@ -55,6 +55,11 @@ class StrategicConsultant:
             config.GROQ_STRATEGY_MODEL, 
             ChatModelParameters(temperature=0.2),
         )
+        
+        self.reviewer_llm = ChatModel.from_name(
+            config.GEMINI_REVIEWER_MODEL, 
+            ChatModelParameters(temperature=0.1),
+        )
 
     # --- PROMPT MANAGEMENT (STRUCTURED OUTPUT) ---
     def get_strategist_instructions(self):
@@ -119,7 +124,26 @@ class StrategicConsultant:
         - FACTS: <Technical/Financial fact 1>, <Fact 2>
         - KEY_TECHS: <Tools/APIs mentioned>
         """
+    def get_reviewer_instructions(self):
+        return """You are a Senior Venture Capitalist and Risk Manager. 
+        Your task is to critically analyze the provided Strategic Intelligence Report. 
+        Don't just repeat the report; evaluate its viability and find the hidden gems.
 
+        CRITICAL ANALYSIS STRUCTURE:
+        
+        ### 🎯 The "Golden Thread"
+        - What is the single most important meta-trend connecting all these points?
+        
+        ### ⚖️ Risk & Reality Check
+        - Which project idea is actually the hardest to pull off for a solo dev? (The "Ugly Truth")
+        - Are the financial allocations too aggressive or too passive for the current climate?
+        
+        ### 💎 High-Conviction Bet
+        - If you had $10,000 and 1 month, which ONE project/asset move from this report would you pick? Why?
+        
+        ### 🛡️ Missing Links
+        - What did the strategist overlook? (e.g., a specific regulation, a competitor move, or a hidden cost)
+        """
     # --- DATA UTILS ---
     def _truncate_by_words(self, text, limit):
         words = text.split()
@@ -223,6 +247,7 @@ class StrategicConsultant:
 
     # --- PIPELINE ---
     async def run_pipeline(self):
+      
         # 1. DEBUG LOGGING BAŞLAT
         # TRACE seviyesi ajanın düşüncelerini gösterir
         logger = Logger("StrategicAgent", level="TRACE")
@@ -248,24 +273,43 @@ class StrategicConsultant:
         # Debug için ara çıktıyı görelim (İsterseniz yorum satırı yapabilirsiniz)
         print(f"\n--- DEBUG: Distilled Data ---\n{distilled_data}...\n---------------------------\n")
 
-        # 3. FORMATLAMA ADIMI (Direct Call + Markdown Builder)
+        # 3. FORMATLAMA ADIMI (Strategist)
         print("🔠 STEP 2: Building Final Strategic Report ...")
         
         final_response = await self.analyzer_llm.run(
             [
                 SystemMessage(self.get_strategist_instructions()),
                 UserMessage(f"Using these distilled facts, build the final report:\n\n{distilled_data}")
-            ])
+            ]).observe(lambda emitter: emitter.on(
+            "*", lambda data, event: logger.info(
+                f"🔍 EVENT: {event.path} | Target: {type(event.creator).__name__} | Data: {data}"
+            )
+        ))
              
         report_content = final_response.get_text_content()
         log_token_usage(final_response, "Formatting & Translation")
         
-        # 4. KAYIT
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        html_file = save_as_html(report_content, f"Strategy_Report_{timestamp}")
+        # 4. ADIM: STRATEJİK YORUMLAMA (Reviewer)
+        print("🕵️ STEP 3: Peer-Reviewing the Strategy...")
+        review_response = await self.reviewer_llm.run([
+            SystemMessage(self.get_reviewer_instructions()),
+            UserMessage(f"Critique and find the highest conviction plays in this report:\n\n{report_content}")
+        ]).observe(lambda emitter: emitter.on(
+            "*", lambda data, event: logger.info(
+                f"🔍 EVENT: {event.path} | Target: {type(event.creator).__name__} | Data: {data}"
+            )
+        ))
         
-        summarize_total_usage(distiller_response, final_response)
-        print(f"\n📄 Rapor Hazır: {os.path.abspath(html_file)}")
+        review_analysis = review_response.get_text_content()
+        log_token_usage(review_response, "Peer Review")
+        
+        # 5. KAYIT
+        full_report = f"{report_content}\n\n---\n## 🕵️ Executive Review & Stress Test\n{review_analysis}"
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        html_file = save_as_html(full_report, f"Strategy_Report_{timestamp}")
+        
+        summarize_total_usage(distiller_response, final_response, review_response)
+        print(f"\n📄 Rapor ve Kritik Hazır: {os.path.abspath(html_file)}")
 
 # --- ENTRY POINT ---
 async def main():
