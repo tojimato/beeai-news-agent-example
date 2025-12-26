@@ -23,101 +23,101 @@ from report_utils import save_as_html
 class StrategicConsultant:
     # --- CONFIGURATION
     MAX_FEED_SEARCH = 15
-    MAX_ENTRIES_PER_SOURCE = 3
+    MAX_ENTRIES_PER_SOURCE = 5
     MAX_SUMMARY_WORDS = 100
     RSS_SOURCES = {
-        "McKinsey_Insights": "https://www.mckinsey.com/insights/rss",
-        "MIT_Innovation": "https://www.technologyreview.com/feed/",
-        "Crypto_News": "https://cointelegraph.com/rss",
-        "Forrester_Strategy": "https://www.forrester.com/blogs/feed/",
+        # STRATEGY & CONSULTING (Kurumsal Sinyaller)
+        "McKinsey_Insights": "https://www.mckinsey.com/insights/rss", # Aktif
+        "Forrester_Strategy": "https://www.forrester.com/blogs/feed/", # Aktif
+        
+        # TECH & INNOVATION (Gelecek Trendleri)
+        "MIT_Innovation": "https://www.technologyreview.com/feed/", # Aktif
+        "Hacker_News": "https://hnrss.org/frontpage", # (hnrss.org en stabil HN servisidir)
+        "The_Verge": "https://www.theverge.com/rss/index.xml", # Aktif
+        
+        # SOLO-DEV & STARTUP (Uygulanabilir Fikirler)
+        "Indie_Hackers": "https://ihrss.io/featured", # (ihrss.io, resmi olmayan ama en stabil IH feed'idir)
+        
+        # FINANCE & CRYPTO (Yatırım ve Risk)
+        "CoinTelegraph": "https://cointelegraph.com/rss", # Aktif
+        "Yahoo_Finance": "https://finance.yahoo.com/news/rssindex", # Reuters yerine en iyi alternatif
+        "MarketWatch_Macro": "https://www.marketwatch.com/rss/topstories", # Ekonomik makro görünüm için
     }
     
     def __init__(self):
-        # Analiz için biraz daha esnek parametreler
-        self.llm = ChatModel.from_name(
+        
+        self.distiller_llm = ChatModel.from_name(
+            config.GROQ_LLAMA_8B_MODEL, 
+            ChatModelParameters(temperature=0),
+        )
+        
+        self.analyzer_llm = ChatModel.from_name(
             config.GROQ_STRATEGY_MODEL, 
             ChatModelParameters(temperature=0.2),
         )
-        # Çeviri ve Formatlama için sıfır hata toleransı
-        self.translator_llm = ChatModel.from_name(
-            config.GROQ_STRATEGY_MODEL, 
-            ChatModelParameters(temperature=0),
-        )
 
     # --- PROMPT MANAGEMENT (STRUCTURED OUTPUT) ---
-    def get_strategic_instructions(self):
-        return """You are a Senior Strategic Analyst specializing in Lean Startups and FinTech.
-        Your task: Distill raw news into high-signal strategic intelligence.
+    def get_strategist_instructions(self):
+        """Adım 2: Stratejik Mimar - Rafine veriden zenginleştirilmiş yol haritası inşa eder."""
+        return """You are a Senior Strategic Analyst and Report Architect. 
+        Your goal: Synthesize distilled facts into a high-density roadmap for a Solo Developer. 
+        Fill data gaps using your internal knowledge of global market cycles, institutional trends (McKinsey/Goldman style), and technical evolution.
 
-        OUTPUT STRUCTURE (STRICT):
-        
-        [MARKET_SENTIMENT]
-        A concise 2-sentence macro view of current trends based on provided data.
+        STRICT REPORT TEMPLATE:
+        # 🚀 STRATEGIC INTELLIGENCE REPORT
+        *Generated on: {Date}*
 
-        [DEVELOPER_EDGE]
-        Identify 3 actionable project ideas. Use format:
-        - ID: <Short Name> | Logic: <The 'Why' for a solo dev> | Stack: <Specific Tech/APIs> | Difficulty: <1-10>
+        ## 🌍 Market Pulse & Sentiment Analysis
+        > {Deep 4-5 sentence synthesis. Analyze the 'Collision' between macro trends and technical shifts. Explain not just what is happening, but why it matters for small-scale capital.}
 
-        [PORTFOLIO_GUIDE]
-        Contextualize financial data for a tech-focused investor.
-        Format: Asset | Logic: <Actionable advice> | Risk: <Low/Med/High>
-        (Assets: Gold, Silver, BTC, Tech Stocks)
+        ---
+        ## 🛠️ Build Opportunities (Solo-Dev Focus)
+        {Identify 5-6 actionable project ideas. Use this format:}
+        ### 💡 [Project Name]
+        * **Strategic Logic:** {Deep explanation. Why is there a vacuum in the market for this right now?}
+        * **Tech Stack:** `{Specific frameworks, specialized APIs, or infrastructure}`
+        * **Execution Complexity:** {1-10}/10 | **Est. Time to MVP:** {e.g., 3 weeks}
 
-        [IMMEDIATE_ACTIONS]
-        - <Actionable item 1>
-        - <Actionable item 2>
-        - <Actionable item 3>
+        ---
+        ## 📈 Detailed Financial Strategy & Asset Allocation
+        {Expand the table. Analyze the underlying macro drivers for each asset.}
+        | Asset | Macro Catalyst & Outlook | Strategic Positioning | Risk Level |
+        | :--- | :--- | :--- | :--- |
+        | **Gold** | {Inflation/Geopolitical context} | {Physical vs. Digital hedge} | 🟢 Low |
+        | **Silver** | {Industrial/Solar/EV demand} | {Speculative/Long-term holding} | 🟡 Med |
+        | **Bitcoin** | {Liquidity/Halving/Institutional flow} | {Exit/Entry triggers} | 🔴 High |
+        | **Tech Stocks** | {AI/Semiconductor cycle} | {Overweight/Underweight sectors} | 🟡 Med |
+        | **Commodities** | {Energy/Oil/Supply chain risk} | {Trading vs. Investing approach} | 🔴 High |
 
-        GUIDELINE: Be technical, blunt, and avoid fluff. If data is sparse, use your internal knowledge to fill gaps logically.
+        ---
+        ## 💡 Advanced Strategic Recommendations
+        {Provide 5 comprehensive strategic moves. Focus on moat-building and scalability.}
+        1. **High-Priority Pivot:** {Most urgent adjustment to current operations}
+        2. **Technical Hedge:** {Which emerging stack or skill ensures future-proofing?}
+        3. **Monetization Strategy:** {Specific pricing model for the build opportunities above}
+        4. **Distribution Hack:** {A low-cost way to find the first 100 users in this climate}
+        5. **Long-term Moat:** {How to protect a solo-dev project from being cloned by AI}
+
+        ---
+        *Disclaimer: Strategic insights for educational purposes only. Predictive logic used to enrich sparse data.*
         """
 
     def get_analysis_prompt(self, data):
         return f"Extract structured insights from this data:\n\n{data}"
 
-    def get_translation_instructions(self):
-        return """You are a Report Architect. 
-        Convert the RAW ANALYTIC TEXT into a premium-tier Strategy Report.
+    def get_distiller_instructions(self):
+        return """You are a Data Distiller. 
+        Your goal is to strip away the fluff from news entries and extract only technical facts and financial data points.
 
-        REPORT DESIGN RULES:
-        1.  **Title**: Use a bold, unique title based on the date.
-        2.  **Executive Summary**: Use a blockquote for the Pulse.
-        3.  **Visual Structure**: Use '---' to separate sections.
-        4.  **Formatting**: Ensure all Tech names are in `code blocks`.
+        TASKS:
+        1. Group related news.
+        2. Extract specific numbers, tech stacks, and regulatory mentions.
+        3. Output in a condensed bullet-point format.
 
-        MARKET REPORT TEMPLATE:
-
-        # 🚀 STRATEGIC INTELLIGENCE REPORT
-        *Generated on: {Date}*
-
-        ## 🌍 Market Pulse
-        > {Content from [MARKET_SENTIMENT]}
-
-        ---
-
-        ## 🛠️ Build Opportunities (Solo-Dev Focus)
-        {Convert [DEVELOPER_EDGE] into this format:}
-        ### 💡 [Project Name]
-        * **Strategic Logic:** [Logic]
-        * **Tech Stack:** `[Stack]`
-        * **Execution Complexity:** [Difficulty]/10
-
-        ---
-
-        ## 📈 Financial Strategy & Risk
-        | Asset | Strategic Outlook | Risk Level |
-        | :--- | :--- | :--- |
-        {Convert [PORTFOLIO_GUIDE] into table rows. Ensure Risk Level uses emojis: 🟢 Low, 🟡 Med, 🔴 High}
-
-        ---
-
-        ## ⚡ Next 7-Day Action Plan
-        {Convert [IMMEDIATE_ACTIONS] into a clean checklist}
-        - [ ] **Priority 1:** [Action 1]
-        - [ ] **Priority 2:** [Action 2]
-        - [ ] **Priority 3:** [Action 3]
-
-        ---
-        *Disclaimer: Strategic insights for educational purposes only.*
+        OUTPUT FORMAT:
+        - CATEGORY: <Name>
+        - FACTS: <Technical/Financial fact 1>, <Fact 2>
+        - KEY_TECHS: <Tools/APIs mentioned>
         """
 
     # --- DATA UTILS ---
@@ -229,12 +229,12 @@ class StrategicConsultant:
         
         raw_data = await self.fetch_feeds()
 
-        print("\n🧠 STEP 1: Extracting Structured Insights ...")
+        print("\n🧠 STEP 1: Distilling Insights ...")
         
-        strategy_response = await self.llm.run(
+        distiller_response = await self.distiller_llm.run(
             [
-                SystemMessage(self.get_strategic_instructions()),
-                UserMessage(self.get_analysis_prompt(raw_data))
+                SystemMessage(self.get_distiller_instructions()),
+                UserMessage(f"Distill this raw feed data:\n\n{raw_data}")
             ]
         ).observe(lambda emitter: emitter.on(
             "*", lambda data, event: logger.info(
@@ -242,19 +242,19 @@ class StrategicConsultant:
             )
         ))
              
-        raw_insights = strategy_response.get_text_content()
-        log_token_usage(strategy_response, "Structured Extraction")
+        distilled_data = distiller_response.get_text_content()
+        log_token_usage(distiller_response, "Distilling Process")
         
         # Debug için ara çıktıyı görelim (İsterseniz yorum satırı yapabilirsiniz)
-        print(f"\n--- DEBUG: RAW INSIGHTS ---\n{raw_insights}...\n---------------------------\n")
+        print(f"\n--- DEBUG: Distilled Data ---\n{distilled_data}...\n---------------------------\n")
 
         # 3. FORMATLAMA ADIMI (Direct Call + Markdown Builder)
-        print("🔠 STEP 2: Building Markdown Report ...")
+        print("🔠 STEP 2: Building Final Strategic Report ...")
         
-        final_response = await self.translator_llm.run(
+        final_response = await self.analyzer_llm.run(
             [
-                SystemMessage(self.get_translation_instructions()),
-                UserMessage(f"Build the report from this data:\n\n{raw_insights}")
+                SystemMessage(self.get_strategist_instructions()),
+                UserMessage(f"Using these distilled facts, build the final report:\n\n{distilled_data}")
             ])
              
         report_content = final_response.get_text_content()
@@ -264,7 +264,7 @@ class StrategicConsultant:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         html_file = save_as_html(report_content, f"Strategy_Report_{timestamp}")
         
-        summarize_total_usage(strategy_response, final_response)
+        summarize_total_usage(distiller_response, final_response)
         print(f"\n📄 Rapor Hazır: {os.path.abspath(html_file)}")
 
 # --- ENTRY POINT ---
