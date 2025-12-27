@@ -11,9 +11,6 @@ from beeai_framework.agents.requirement import RequirementAgent
 from beeai_framework.agents.requirement.requirements.conditional import ConditionalRequirement
 from beeai_framework.memory import UnconstrainedMemory
 from beeai_framework.backend import ChatModel, ChatModelParameters, UserMessage, SystemMessage
-from beeai_framework.tools import Tool
-from beeai_framework.tools.think import ThinkTool
-from beeai_framework.middleware.trajectory import GlobalTrajectoryMiddleware
 from beeai_framework.logger import Logger
 
 # Custom Utils
