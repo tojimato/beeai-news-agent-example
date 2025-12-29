@@ -10,51 +10,33 @@ from beeai_framework.backend import ChatModel, UserMessage, SystemMessage
 
 from src.agents.base_agent import BaseAgent
 from src.core.llm_service import LLMService
+from src.prompts.prompt_templates import DistillerPromptTemplate
+from src.config.professions import Profession
 
 
 class DistillerAgent(BaseAgent):
     """Agent for condensing raw data into structured facts.
-    
-    Responsibility:
-    - Strip away fluff from news entries
-    - Extract technical facts and financial data points
-    - Output in condensed bullet-point format
-    - Group related news items
-    
-    Uses the fast, lightweight LLM model for quick processing.
+    Now supports profession-specific prompt templates.
     """
 
-    def __init__(self, llm_service: LLMService) -> None:
-        """Initialize distiller agent.
+    def __init__(self, llm_service: LLMService, profession: Profession) -> None:
+        """Initialize distiller agent with profession.
         
         Args:
             llm_service: Service for model access.
+            profession: Profession enum for prompt adaptation.
         """
         super().__init__(
             name="DistillerAgent",
             llm_service=llm_service,
             task_name="Data Distillation"
         )
+        self.profession = profession
+        self.prompt_template = DistillerPromptTemplate(profession)
 
     def get_system_prompt(self) -> str:
-        """Get system prompt for data distillation.
-        
-        Returns:
-            System message instructing the distiller on its role.
-        """
-        return """You are a Data Distiller.
-Your goal is to strip away the fluff from news entries and extract only technical facts and financial data points.
-
-TASKS:
-1. Group related news.
-2. Extract specific numbers, tech stacks, and regulatory mentions.
-3. Output in a condensed bullet-point format.
-
-OUTPUT FORMAT:
-- CATEGORY: <Name>
-- FACTS: <Technical/Financial fact 1>, <Fact 2>
-- KEY_TECHS: <Tools/APIs mentioned>
-"""
+        """Get system prompt for data distillation (profession-specific)."""
+        return self.prompt_template.generate()
 
     def _initialize_model(self) -> ChatModel:
         """Initialize the fast distiller model.

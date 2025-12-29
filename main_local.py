@@ -7,9 +7,11 @@ injection for clean architecture and testability.
 Environment: Uses .env.local for API keys and configuration.
 """
 
+import argparse
 import asyncio
 import logging
 
+from src.config.professions import Profession
 from src.pipelines.strategic_pipeline import StrategicPipeline, PipelineOutput
 
 
@@ -31,8 +33,20 @@ async def main() -> None:
     # Suppress asyncio debug logs
     logging.getLogger('asyncio').setLevel(logging.CRITICAL)
 
-    # Initialize pipeline with default dependencies (all injected)
-    pipeline: StrategicPipeline = StrategicPipeline()
+    # CLI argument for profession selection
+    parser = argparse.ArgumentParser(description="Run Strategic Intelligence Pipeline")
+    parser.add_argument(
+        "--profession",
+        type=str,
+        default=Profession.SOLO_DEVELOPER.value,
+        choices=[p.value for p in Profession],
+        help="Profession domain for analysis."
+    )
+    args = parser.parse_args()
+    profession = Profession(args.profession)
+
+    # Initialize pipeline with selected profession
+    pipeline: StrategicPipeline = StrategicPipeline(profession=profession)
 
     # Execute the full pipeline
     output: PipelineOutput = await pipeline.execute()

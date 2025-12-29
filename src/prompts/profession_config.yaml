@@ -1,0 +1,123 @@
+# Central profession configuration for BeeAI pipeline
+# All metadata for each profession is defined here
+
+professions:
+  solo_developer:
+    display_name: "Solo Developer"
+    applicability_domains:
+      - "SaaS product ideas"
+      - "Open-source projects"
+      - "API/library development"
+      - "Indie game development"
+      - "Automation tools"
+    risk_factors:
+      - "Product-market fit uncertainty"
+      - "User acquisition"
+      - "Technical debt"
+      - "Market saturation"
+      - "Burnout and context-switching"
+    budget_range_monthly_usd: [500, 5000]
+    timeline_weeks: 12
+    success_metrics:
+      - "First 100 paying customers"
+      - "Monthly recurring revenue (MRR)"
+      - "GitHub stars or community engagement"
+      - "Feature completeness"
+      - "User feedback loops"
+    peer_review_lens: "Venture Capitalist critique for solo dev feasibility"
+
+  interior_designer:
+    display_name: "Interior Designer"
+    applicability_domains:
+      - "Residential space transformation"
+      - "Commercial office redesign"
+      - "Hospitality and retail environments"
+      - "Sustainable material sourcing"
+      - "Space optimization for accessibility"
+    risk_factors:
+      - "Budget overruns"
+      - "Project scope creep"
+      - "Client expectation misalignment"
+      - "Material availability delays"
+      - "Contractor quality and scheduling"
+    budget_range_monthly_usd: [2000, 10000]
+    timeline_weeks: 16
+    success_metrics:
+      - "Project delivery on time and budget"
+      - "Client satisfaction score"
+      - "Design portfolio quality"
+      - "Contractor network strength"
+      - "Repeat business rate"
+    peer_review_lens: "Design industry expert with focus on feasibility and ROI"
+
+  lawyer:
+    display_name: "Lawyer"
+    applicability_domains:
+      - "Contract law and negotiation"
+      - "Regulatory compliance advice"
+      - "IP protection strategy"
+      - "Litigation risk assessment"
+      - "Legal technology adoption"
+    risk_factors:
+      - "Regulatory compliance changes"
+      - "Client liability exposure"
+      - "Case precedent shifts"
+      - "Resource allocation and caseload"
+      - "Professional liability insurance costs"
+    budget_range_monthly_usd: [3000, 15000]
+    timeline_weeks: 20
+    success_metrics:
+      - "Client risk mitigation achieved"
+      - "Case win rate"
+      - "Billing hours optimization"
+      - "Regulatory compliance maintained"
+      - "Client retention and referrals"
+    peer_review_lens: "Senior legal advisor with focus on malpractice and ethics"
+
+  marketing_manager:
+    display_name: "Marketing Manager"
+    applicability_domains:
+      - "Audience growth and retention"
+      - "Content marketing strategy"
+      - "Channel optimization (social, email, paid)"
+      - "Brand positioning and messaging"
+      - "Community building and engagement"
+    risk_factors:
+      - "Channel saturation and cost inflation"
+      - "Attribution and ROI measurement"
+      - "Brand perception and reputation"
+      - "Competitive market positioning"
+      - "Audience burnout and message fatigue"
+    budget_range_monthly_usd: [1500, 8000]
+    timeline_weeks: 13
+    success_metrics:
+      - "Cost per acquisition (CPA)"
+      - "Customer lifetime value (CLV)"
+      - "Engagement rate and sentiment"
+      - "Conversion funnel optimization"
+      - "Market share growth"
+    peer_review_lens: "CMO perspective with focus on ROI and brand risk"
+
+  conservation_project_planning_manager:
+    display_name: "Conservation Project Planning Manager"
+    applicability_domains:
+      - "Habitat restoration projects"
+      - "Carbon offset initiatives"
+      - "Community-based conservation"
+      - "Biodiversity monitoring and assessment"
+      - "Climate adaptation planning"
+    risk_factors:
+      - "Environmental regulation changes"
+      - "Stakeholder coordination complexity"
+      - "Funding instability and grant dependencies"
+      - "Climate unpredictability and biodiversity shifts"
+      - "Long-term sustainability of outcomes"
+    budget_range_monthly_usd: [5000, 25000]
+    timeline_weeks: 52
+    success_metrics:
+      - "Hectares restored or protected"
+      - "Biodiversity indices improved"
+      - "Community engagement and buy-in"
+      - "Long-term funding secured"
+      - "Environmental impact measurability"
+    peer_review_lens: "Environmental scientist with focus on impact and sustainability"

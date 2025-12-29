@@ -12,6 +12,7 @@ from typing import Optional
 from src.agents.distiller_agent import DistillerAgent
 from src.agents.reviewer_agent import ReviewerAgent
 from src.agents.strategist_agent import StrategistAgent
+from src.config.professions import Profession
 from src.core.data_processor import DataProcessor
 from src.core.llm_service import LLMService
 from src.core.rss_service import RSSService
@@ -70,6 +71,7 @@ class StrategicPipeline:
         rss_service: Optional[RSSService] = None,
         data_processor: Optional[DataProcessor] = None,
         llm_service: Optional[LLMService] = None,
+        profession: Profession = Profession.SOLO_DEVELOPER,
     ) -> None:
         """Initialize pipeline with dependencies (Dependency Injection).
         
@@ -82,10 +84,10 @@ class StrategicPipeline:
         self.data_processor: DataProcessor = data_processor or DataProcessor()
         self.llm_service: LLMService = llm_service or LLMService()
 
-        # Initialize agents with shared LLM service
-        self.distiller_agent: DistillerAgent = DistillerAgent(self.llm_service)
-        self.strategist_agent: StrategistAgent = StrategistAgent(self.llm_service)
-        self.reviewer_agent: ReviewerAgent = ReviewerAgent(self.llm_service)
+        # Initialize agents with shared LLM service and profession
+        self.distiller_agent: DistillerAgent = DistillerAgent(self.llm_service, profession)
+        self.strategist_agent: StrategistAgent = StrategistAgent(self.llm_service, profession)
+        self.reviewer_agent: ReviewerAgent = ReviewerAgent(self.llm_service, profession)
 
         # Internal state for metric tracking
         self._agent_outputs: list = []

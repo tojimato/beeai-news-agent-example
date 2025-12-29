@@ -8,7 +8,8 @@ We are building a multi-agent LLM pipeline using the **BeeAI framework**. The pr
 
 ## 2. Global Standards (Mandatory)
 - **Primary Source:** You MUST strictly follow every rule defined in `.github/instructions/clean-code-standards.instructions.md`.
-- **Compliance Check:** Before finalizing any code, verify it against the Clean Code checklist in the standards file.
+- **Python Formatting:** You MUST follow all formatting and line length rules in `.github/instructions/python-format.instructions.md`.
+- **Compliance Check:** Before finalizing any code, verify it against the Clean Code checklist in the standards file and the Python formatting instructions.
 
 ## 3. Framework & Technical Constraints
 - **Cost/Token Tracking:** Ensure every LLM response is processed for token/cost metrics using available utility patterns.
