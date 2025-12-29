@@ -58,43 +58,31 @@ class StrategistPromptTemplate:
 
     def generate(self) -> str:
         budget_min, budget_max = self.config.budget_range_monthly_usd
-        key_risks = ', '.join(self.config.risk_factors[:3])
+        key_risks = ', '.join(self.config.risk_factors)
         applicability = '\n'.join(
             f"  - {domain}" for domain in self.config.applicability_domains
         )
-        success_metrics = ', '.join(self.config.success_metrics[:2])
+        success_metrics = ', '.join(self.config.success_metrics)
         prompt = (
-            f"You are a strategic analyst specializing in "
-            f"{self.config.display_name} intelligence.\n\n"
-            "Your task: Synthesize intelligence into a cohesive strategic action plan.\n\n"
+            f"You are a strategic analyst specializing in {self.config.display_name} intelligence.\n\n"
+            "Your task: Review the distilled intelligence and provide a concise summary (4-5 sentences) that captures the main trends, risks, and actionable insights from the data.\n\n"
             "## Context:\n"
             f"- Profession: {self.config.display_name}\n"
-            f"- Monthly budget range: ${budget_min:,} - ${budget_max:,}\n"
-            f"- Project timeline horizon: {self.config.timeline_weeks} weeks\n"
+            f"- Analysis horizon: {self.config.timeline_weeks} weeks\n"
             f"- Key risk factors: {key_risks}\n\n"
             "## Your Mission:\n"
-            f"Based on the distilled intelligence provided, identify **5-6 concrete, actionable "
-            f"opportunities** that a {self.config.display_name.lower()} can pursue within "
-            f"{self.config.timeline_weeks} weeks.\n\n"
-            "## For Each Opportunity, Provide:\n"
-            "1. **Opportunity Name**: Clear, memorable title\n"
-            "2. **Why Now**: Time-sensitive trigger from recent intelligence\n"
-            f"3. **Execution Plan**: Step-by-step (Week 1-4, Weeks 5-8, Weeks 9-"
-            f"{self.config.timeline_weeks})\n"
-            "4. **Resource Needs**: Team, tools, budget breakdown\n"
-            f"5. **Success Metrics**: How to measure progress (reference: {success_metrics})\n"
-            "6. **Risk Assessment**: Biggest execution blockers and mitigation\n\n"
-            f"## Financial Hedging Strategy:\n"
-            f"Allocate {self.config.display_name.lower()} resources across 3-5 hedges:\n"
-            "- Primary play (highest conviction, 50% of budget)\n"
-            "- Secondary plays (30% of budget)\n"
-            "- Hedge positions (20% of budget)\n\n"
+            "Based on the provided summary and intelligence, generate 5-6 practical recommendations for individual investors. These should cover a mix of asset classes such as cryptocurrencies (BTC, ETH, etc.), commodities (gold, silver, etc.), stocks, and other relevant markets.\n\n"
+            "## For Each Recommendation, Provide:\n"
+            "1. **Recommendation Title**: Clear and concise\n"
+            "2. **Rationale**: Brief explanation based on recent intelligence\n"
+            "3. **Suggested Actions**: Step-by-step guidance for individuals\n"
+            f"4. **Success Metrics**: How to measure progress (reference: {success_metrics})\n"
+            "5. **Risk Assessment**: Main risks and mitigation\n\n"
             f"## Applicability Domains:\n{applicability}\n\n"
             "## Output Format:\n"
-            "Deliver a comprehensive markdown strategic roadmap. Each opportunity should be:\n"
+            "Deliver a markdown report. Each recommendation should be:\n"
             "- Specific (not generic)\n"
             "- Time-bounded (clear weeks-to-completion)\n"
-            "- Budget-aware (respects monthly burn)\n"
             "- Risk-conscious (acknowledges failure scenarios)\n"
         )
         return prompt

@@ -1,3 +1,6 @@
+---
+applyTo: "**"
+---
 # Python Formatting & Line Length Standard
 
 - **Maximum line length:** 100 characters (PEP 8 recommended, enforced for all code and docstrings)
