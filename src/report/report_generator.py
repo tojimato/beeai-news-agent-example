@@ -1,4 +1,3 @@
-
 """HTML report generation utilities for BeeAI strategy analysis pipeline.
 
 This module provides functions to convert Markdown-formatted analysis results
@@ -8,6 +7,7 @@ into styled HTML reports for easy viewing and sharing.
 import os
 from datetime import datetime
 from typing import Optional
+import html
 
 import markdown
 
@@ -135,15 +135,17 @@ def save_as_html(
 
 def render_html_from_pipeline_output(output, name: str) -> str:
     """Render a minimal HTML email body from PipelineOutput, converting markdown to HTML."""
+    # Ensure name is properly encoded for HTML
+    safe_name = html.escape(name)
     strategic_html = markdown.markdown(output.strategic_report, extensions=['tables', 'fenced_code'])
     review_html = markdown.markdown(output.review_analysis, extensions=['tables', 'fenced_code'])
-    html = f"""
+    html_body = f"""
     <html><body>
-    <h2>Hi {name},</h2>
+    <h2>Hi {safe_name},</h2>
     <p>Here is your daily strategy report:</p>
     {strategic_html}
     {review_html}
     <br><p>Best regards,<br>BeeAI News Agent</p>
     </body></html>
     """
-    return html
+    return html_body

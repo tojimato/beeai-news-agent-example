@@ -1,13 +1,34 @@
+
+import sys
+import os
 import json
-from celery.schedules import crontab
-from tasks.queue import app, send_daily_report
+import time
+from apscheduler.schedulers.background import BackgroundScheduler
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from task_queue import send_daily_report
 
-with open('recipients.json') as f:
-    recipients = json.load(f)
+def run_scheduler():
+    """Schedules daily report jobs for each recipient at specified hour/minute."""
+    with open('recipients.json', encoding='utf-8') as f:
+        recipients = json.load(f)
 
-for idx, rec in enumerate(recipients):
-    app.conf.beat_schedule[f'send-report-{idx}'] = {
-        'task': 'tasks.queue.send_daily_report',
-        'schedule': crontab(hour=rec['hour'], minute=rec['minute']),
-        'args': (rec['email'], rec['profession'], rec['name']),
-    }
+    scheduler = BackgroundScheduler()
+    for idx, rec in enumerate(recipients):
+        scheduler.add_job(
+            send_daily_report,
+            'cron',
+            hour=rec['hour'],
+            minute=rec['minute'],
+            args=(rec['email'], rec['profession'], rec['name']),
+            id=f'send-report-{idx}'
+        )
+    scheduler.start()
+    print('APScheduler started. Press Ctrl+C to exit.')
+    try:
+        while True:
+            time.sleep(2)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
+
+if __name__ == "__main__":
+    run_scheduler()

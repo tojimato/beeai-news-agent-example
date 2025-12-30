@@ -1,4 +1,4 @@
-celery[redis]
+apscheduler
 beeai-framework
 feedparser
 markdown
