@@ -1,4 +1,3 @@
-
 """Application settings and environment configuration.
 
 This module loads environment variables from .env.local and defines
@@ -12,6 +11,12 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env.local file (secrets, API keys)
 load_dotenv(".env.local")
+
+# ============================================================================
+# Redis/Celery Queue Configuration
+# ============================================================================
+
+REDIS_URL: Final[str] = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 
 # ============================================================================
 # RSS Feed Configuration

@@ -1,14 +1,13 @@
-
 import smtplib
 from email.message import EmailMessage
 from src.config.settings import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
 
-def send_report_email(email: str, name: str, report: str) -> None:
+def send_email(email: str, subject: str, body: str, sender_name: str = None) -> None:
     msg = EmailMessage()
-    msg['Subject'] = 'Your Daily Report'
-    msg['From'] = SMTP_USER
+    msg['Subject'] = subject
+    msg['From'] = f"{sender_name or SMTP_USER} <{SMTP_USER}>"
     msg['To'] = email
-    msg.set_content(f"Hi {name},\n\n{report}")
+    msg.set_content(body, subtype='html')
 
     if SMTP_PORT == 465:
         with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:

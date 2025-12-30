@@ -1,10 +1,24 @@
 from celery import Celery
-from src.report.email_service import send_report_email
-from src.core.report_generator import generate_report_for_profession
+from src.config.professions import Profession
+from src.config.settings import REDIS_URL
 
-app = Celery('beeai', broker='redis://localhost:6379/0')
+import asyncio
+from src.utils.email_service import send_email
+from src.pipelines.strategic_pipeline import StrategicPipeline, PipelineOutput
+from src.report.report_generator import render_html_from_pipeline_output
+
+app = Celery('beeai', broker=REDIS_URL)
 
 @app.task
-def send_daily_report(email: str, profession: str, name: str):
-    report = generate_report_for_profession(profession)
-    send_report_email(email, name, report)
+def send_daily_report(email: str, profession: Profession, name: str):
+    pipeline = StrategicPipeline(profession=profession)
+    output: PipelineOutput = asyncio.run(pipeline.execute())
+    body = render_html_from_pipeline_output(output, name)
+  
+    if hasattr(profession, 'value'):
+        profession_str = profession.value
+    else:
+        profession_str = str(profession)
+    
+    subject = f"Your Daily {profession_str.replace('_', ' ').title()} Report"
+    send_email(email, subject, body, sender_name=name)
