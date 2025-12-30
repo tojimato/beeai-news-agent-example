@@ -70,7 +70,7 @@ class StrategistPromptTemplate:
             "- **Why Now:** [1 sentence, why this is timely]"
             "- **Action Steps:** [How to achieve the relevant success metric(s)]"
             "- **Risk Note:** [Which key risk(s) are most relevant, and how to mitigate]"
-            "- **Sources:** [List source urls]\n"
+            "- **Sources:** [List source urls as external link markdown format][External link to title](https://www.genome.gov/)\n"
             "\n## Applicability Domains\n"
             f"{applicability}\n"
         )
