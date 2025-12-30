@@ -16,21 +16,57 @@ load_dotenv(".env.local")
 # RSS Feed Configuration
 # ============================================================================
 
-RSS_SOURCES: Final[dict[str, str]] = {
-    # Strategy & Consulting (Corporate Signals)
-    "McKinsey_Insights": "https://www.mckinsey.com/insights/rss",
-    "Forrester_Strategy": "https://www.forrester.com/blogs/feed/",
-    # Tech & Innovation (Future Trends)
-    "MIT_Innovation": "https://www.technologyreview.com/feed/",
-    "Hacker_News": "https://hnrss.org/frontpage",
-    "The_Verge": "https://www.theverge.com/rss/index.xml",
-    # Solo-Dev & Startup (Actionable Ideas)
-    "Indie_Hackers": "https://ihrss.io/featured",
-    # Finance & Crypto (Investment & Risk)
-    "CoinTelegraph": "https://cointelegraph.com/rss",
-    "Yahoo_Finance": "https://finance.yahoo.com/news/rssindex",
-    "MarketWatch_Macro": "https://www.marketwatch.com/rss/topstories",
+RSS_SOURCES: Final[dict[str, dict[str, str]]] = {
+    # Default sources for all professions
+    "default": {
+        "McKinsey_Insights": "https://www.mckinsey.com/insights/rss",
+        "Forrester_Strategy": "https://www.forrester.com/blogs/feed/",
+        "InfoQ": "https://feed.infoq.com/",
+        "Hacker_News": "https://hnrss.org/frontpage",
+        "The_Verge": "https://www.theverge.com/rss/index.xml",
+        "MIT_Innovation": "https://www.technologyreview.com/feed/",
+        "OpenAI_Blog": "https://openai.com/news/rss.xml",
+        "Towards_AI": "https://towardsai.net/feed",
+        "Yahoo_Finance": "https://finance.yahoo.com/news/rssindex",
+        "CoinTelegraph": "https://cointelegraph.com/rss",
+        "Economist_Business": "https://www.economist.com/business/rss.xml"
+    },
+    # Example: profession-specific overrides (add as needed)
+    "interior_designer": {
+        "Dezeen": "https://www.dezeen.com/feed/",
+        "ArchDaily": "https://www.archdaily.com/rss",
+        "InteriorDesign": "https://www.interiordesign.net/rss/",
+        "DesignBoom": "https://www.designboom.com/feed/"
+    },
+    "solo_developer": {
+        "IndieHackers": "https://www.indiehackers.com/feed",
+        "ProductHunt": "https://www.producthunt.com/feed",
+        "Hacker_News": "https://hnrss.org/frontpage"
+    }
+    # Add more professions as needed
 }
+
+def get_rss_sources_for_profession(profession: str) -> dict[str, str]:
+    """
+    Returns the RSS sources for a given profession. If no specific sources are defined,
+    returns the default set.
+    Args:
+        profession: The profession key (e.g., 'interior_designer') or Profession enum.
+    Returns:
+        Dictionary of RSS source names to URLs.
+    """
+    if hasattr(profession, 'value'):
+        key = profession.value
+    else:
+        key = str(profession)
+        
+    sources = dict(RSS_SOURCES.get("default", {}))
+    
+    prof_sources = RSS_SOURCES.get(key, {})
+    
+    sources.update(prof_sources)
+    
+    return sources
 
 # ============================================================================
 # Feed Processing Configuration

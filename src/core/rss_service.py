@@ -8,13 +8,14 @@ from typing import Any, Final
 
 import feedparser
 
+from src.config.professions import Profession
 from src.config.settings import (
     VALUABLE_KEYWORDS,
     NOISE_KEYWORDS,
     MAX_FEED_SEARCH,
     MAX_ENTRIES_PER_SOURCE,
     MAX_SUMMARY_WORDS,
-    RSS_SOURCES,
+    get_rss_sources_for_profession,
 )
 from src.utils.text_processing import clean_html, truncate_text
 
@@ -38,6 +39,7 @@ class RSSService:
 
     def __init__(
         self,
+        profession: Profession = None,
         rss_sources: dict[str, str] | None = None,
         max_feed_search: int | None = None,
         max_entries_per_source: int | None = None,
@@ -46,16 +48,22 @@ class RSSService:
         noise_keywords: set[str] | None = None,
     ) -> None:
         """Initialize RSS service with configuration (Dependency Injection).
-        
         Args:
-            rss_sources: Feed URLs by source name. Defaults to config.
+            profession: Profession enum for selecting RSS sources.
+            rss_sources: Feed URLs by source name. Overrides profession if provided.
             max_feed_search: Max entries to scan. Defaults to config.
             max_entries_per_source: Target extracts per source. Defaults to config.
             max_summary_words: Summary word limit. Defaults to config.
             valuable_keywords: Quality indicators. Defaults to config.
             noise_keywords: Irrelevant content. Defaults to config.
         """
-        self.rss_sources: dict[str, str] = rss_sources or RSS_SOURCES
+        if rss_sources is not None:
+            self.rss_sources: dict[str, str] = rss_sources
+        else:
+            # Default to 'default' if no profession provided
+            prof_key = profession.value if profession else "default"
+            self.rss_sources: dict[str, str] = get_rss_sources_for_profession(prof_key)
+            
         self.max_feed_search: int = max_feed_search or MAX_FEED_SEARCH
         self.max_entries_per_source: int = max_entries_per_source or MAX_ENTRIES_PER_SOURCE
         self.max_summary_words: int = max_summary_words or MAX_SUMMARY_WORDS
@@ -63,18 +71,10 @@ class RSSService:
         self.noise_keywords: set[str] = noise_keywords or NOISE_KEYWORDS
 
     async def fetch_all_feeds(self) -> str:
-        """Aggregate and filter RSS feeds to extract relevant news content.
-        
-        For each RSS source:
-        1. Parse the feed
-        2. Filter entries for relevance using keyword scoring
-        3. Clean HTML and truncate summaries
-        4. Aggregate into a single formatted string
-        
-        Returns:
-            Formatted string of aggregated relevant news entries, grouped by source.
+        """Aggregate and filter RSS feeds to extract relevant news content in a compact, line-based format.
+        Raises RuntimeError if no relevant content is found.
         """
-        aggregated_content: str = ""
+        lines: list[str] = []
 
         print("\n" + "═" * 60)
         print("📡 SMART DATA ACQUISITION")
@@ -93,19 +93,22 @@ class RSSService:
                 )
 
                 print(f"✅ {source_name}: Found {len(relevant_entries)} relevant items")
-                aggregated_content += f"\n--- SOURCE: {source_name} ---\n"
 
                 for entry in relevant_entries:
-                    summary: str = truncate_text(
-                        clean_html(getattr(entry, 'summary', '')),
-                        self.max_summary_words
-                    )
-                    aggregated_content += f"TITLE: {entry.title}\nCONTENT: {summary}\n"
+                    title = getattr(entry, 'title', '').strip()
+                    link = getattr(entry, 'link', '').strip()
+                    if not title or not link:
+                        continue
+                    # Compact line: Title - Link
+                    lines.append(f"{title} - {link}")
 
             except Exception as e:
                 print(f"⚠️ Error fetching {source_name}: {e}")
 
-        return aggregated_content
+        if not lines:
+            raise RuntimeError("No relevant RSS content found. Pipeline execution halted.")
+
+        return '\n'.join(lines)
 
     async def _filter_feed_entries(
         self,

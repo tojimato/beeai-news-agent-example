@@ -80,12 +80,12 @@ class StrategicPipeline:
             data_processor: Data transformation service. Creates default if None.
             llm_service: LLM model service. Creates default if None.
         """
-        self.rss_service: RSSService = rss_service or RSSService()
+        self.rss_service: RSSService = rss_service or RSSService(profession=profession)
         self.data_processor: DataProcessor = data_processor or DataProcessor()
         self.llm_service: LLMService = llm_service or LLMService()
 
         # Initialize agents with shared LLM service and profession
-        self.distiller_agent: DistillerAgent = DistillerAgent(self.llm_service, profession)
+        self.distiller_agent: DistillerAgent = DistillerAgent(self.llm_service)
         self.strategist_agent: StrategistAgent = StrategistAgent(self.llm_service, profession)
         self.reviewer_agent: ReviewerAgent = ReviewerAgent(self.llm_service, profession)
 
@@ -181,7 +181,7 @@ class StrategicPipeline:
 
             distilled_data: str = self.distiller_agent.get_distilled_text(distiller_response)
             print(f"✅ Stage 2 complete: {len(distilled_data)} characters distilled")
-            print(f"\n--- DEBUG: Distilled Data ---\n{distilled_data[:300]}...\n---\n")
+            print(f"\n--- DEBUG: Distilled Data ---\n{distilled_data[:1300]}...\n---\n")
 
             return distilled_data
 

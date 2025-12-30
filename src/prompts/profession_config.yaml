@@ -3,28 +3,28 @@
 
 professions:
   solo_developer:
-    display_name: "Solo Developer"
+    display_name: "Solo Developer & Consultant"
     applicability_domains:
       - "SaaS product ideas"
-      - "Open-source projects"
-      - "API/library development"
-      - "Indie game development"
       - "Automation tools"
+      - "API/library development"
+      - "High-end Technical Consulting" 
+      - "Fractional CTO services"       
+      - "Specialized Training & Workshops" 
     risk_factors:
       - "Product-market fit uncertainty"
-      - "User acquisition"
-      - "Technical debt"
-      - "Market saturation"
       - "Burnout and context-switching"
-    budget_range_monthly_usd: [500, 5000]
-    timeline_weeks: 12
+      - "Technical debt"
+      - "Scope creep in consulting projects" 
+      - "Income instability (feast and famine cycle)" 
+      - "Trading time for money" 
     success_metrics:
-      - "First 100 paying customers"
       - "Monthly recurring revenue (MRR)"
-      - "GitHub stars or community engagement"
-      - "Feature completeness"
-      - "User feedback loops"
-    peer_review_lens: "Venture Capitalist critique for solo dev feasibility"
+      - "Average Hourly Rate (AHR)" 
+      - "Inbound lead quality"       
+      - "Client retention rate"      
+      - "First 100 paying customers"
+    peer_review_lens: "Venture Capitalist critique for solo dev feasibility and Scalability Specialist lens"
 
   interior_designer:
     display_name: "Interior Designer"
@@ -40,8 +40,6 @@ professions:
       - "Client expectation misalignment"
       - "Material availability delays"
       - "Contractor quality and scheduling"
-    budget_range_monthly_usd: [2000, 10000]
-    timeline_weeks: 16
     success_metrics:
       - "Project delivery on time and budget"
       - "Client satisfaction score"
@@ -64,8 +62,6 @@ professions:
       - "Case precedent shifts"
       - "Resource allocation and caseload"
       - "Professional liability insurance costs"
-    budget_range_monthly_usd: [3000, 15000]
-    timeline_weeks: 20
     success_metrics:
       - "Client risk mitigation achieved"
       - "Case win rate"
@@ -88,8 +84,6 @@ professions:
       - "Brand perception and reputation"
       - "Competitive market positioning"
       - "Audience burnout and message fatigue"
-    budget_range_monthly_usd: [1500, 8000]
-    timeline_weeks: 13
     success_metrics:
       - "Cost per acquisition (CPA)"
       - "Customer lifetime value (CLV)"
@@ -112,8 +106,6 @@ professions:
       - "Funding instability and grant dependencies"
       - "Climate unpredictability and biodiversity shifts"
       - "Long-term sustainability of outcomes"
-    budget_range_monthly_usd: [5000, 25000]
-    timeline_weeks: 52
     success_metrics:
       - "Hectares restored or protected"
       - "Biodiversity indices improved"

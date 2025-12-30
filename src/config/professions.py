@@ -21,8 +21,6 @@ class ProfessionConfig:
         self.display_name: str = data.get("display_name", "")
         self.applicability_domains: list[str] = data.get("applicability_domains", [])
         self.risk_factors: list[str] = data.get("risk_factors", [])
-        self.budget_range_monthly_usd: tuple[int, int] = tuple(data.get("budget_range_monthly_usd", (0, 0)))
-        self.timeline_weeks: int = data.get("timeline_weeks", 0)
         self.success_metrics: list[str] = data.get("success_metrics", [])
         self.peer_review_lens: str = data.get("peer_review_lens", "")
 

@@ -16,26 +16,23 @@ from src.config.professions import Profession
 
 class DistillerAgent(BaseAgent):
     """Agent for condensing raw data into structured facts.
-    Now supports profession-specific prompt templates.
+    Uses a generic, profession-agnostic prompt template.
     """
 
-    def __init__(self, llm_service: LLMService, profession: Profession) -> None:
-        """Initialize distiller agent with profession.
-        
+    def __init__(self, llm_service: LLMService) -> None:
+        """Initialize distiller agent (profession-agnostic). 
         Args:
             llm_service: Service for model access.
-            profession: Profession enum for prompt adaptation.
         """
         super().__init__(
             name="DistillerAgent",
             llm_service=llm_service,
             task_name="Data Distillation"
         )
-        self.profession = profession
-        self.prompt_template = DistillerPromptTemplate(profession)
+        self.prompt_template = DistillerPromptTemplate()
 
     def get_system_prompt(self) -> str:
-        """Get system prompt for data distillation (profession-specific)."""
+        """Get system prompt for data distillation (profession-agnostic)."""
         return self.prompt_template.generate()
 
     def _initialize_model(self) -> ChatModel:
