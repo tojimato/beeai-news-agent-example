@@ -1,7 +1,7 @@
 import os
 import pytest
 from src.config.professions import Profession
-from tasks.queue import send_daily_report
+from tasks.task_queue import send_daily_report
 
 @pytest.mark.skipif(
     not (os.environ.get('SMTP_USER') and os.environ.get('SMTP_PASS')),
