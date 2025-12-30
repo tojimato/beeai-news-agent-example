@@ -1,3 +1,4 @@
+celery[redis]
 beeai-framework
 feedparser
 markdown

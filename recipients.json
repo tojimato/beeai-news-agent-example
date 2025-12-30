@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Tolga Kök",
+    "email": "tojimato@gmail.com",
+    "profession": "solo_developer",
+    "hour": 9,
+    "minute": 0
+  },
+  {
+    "name": "Ada Lovelace",
+    "email": "ada@example.com",
+    "profession": "interior_designer",
+    "hour": 10,
+    "minute": 30
+  }
+]

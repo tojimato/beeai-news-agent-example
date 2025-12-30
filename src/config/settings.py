@@ -1,3 +1,4 @@
+
 """Application settings and environment configuration.
 
 This module loads environment variables from .env.local and defines
@@ -119,3 +120,12 @@ REPORTS_DIR: Final[str] = "reports"
 
 LOG_FILE: Final[str] = "agent_usage.log"
 """File path for token usage and cost logging."""
+
+# ============================================================================
+# SMTP Email Configuration
+# ============================================================================
+
+SMTP_HOST: Final[str] = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT: Final[int] = int(os.environ.get("SMTP_PORT", 465))
+SMTP_USER: Final[str] = os.environ.get("SMTP_USER", "your@email.com")
+SMTP_PASS: Final[str] = os.environ.get("SMTP_PASS", "yourpassword")
