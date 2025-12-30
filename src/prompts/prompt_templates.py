@@ -95,6 +95,6 @@ class ReviewerPromptTemplate:
             f"## Success Metrics: {success_metrics}\n"
             "## Output Format:\n"
             "- For each opportunity: 1-2 sentence critique (risk, assumption, missing view).\n"
-            "- At the end: 1 sentence overall confidence level.\n"
+            "- At the end: 1 sentence overall confidence level with percentage.\n"
         )
         return prompt
