@@ -19,6 +19,7 @@ applyTo: "**"
   - Use a single blank line between functions, methods, and class definitions.
   - Use two blank lines before top-level function and class definitions.
   - Do not use extra blank lines between statements inside a function, method, or class unless separating logical sections.
+  - Always add a single blank line between distinct logical blocks within a function (e.g., input validation, data preparation, main logic, output/return). This improves readability and makes code easier to follow.
   - Avoid multiple consecutive blank lines anywhere in the file.
 
 - **String formatting:**
