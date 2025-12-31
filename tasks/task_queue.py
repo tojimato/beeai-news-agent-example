@@ -8,8 +8,8 @@ from pydantic import ValidationError
 
 # Local imports
 from src.config.professions import Profession
-from src.config.settings import REDIS_URL
 from src.config.validation import PipelineInputModel
+from src.core.redis_client import RedisClient
 from src.utils.email_service import send_email
 from src.pipelines.strategic_pipeline import StrategicPipeline, PipelineOutput
 from src.report.report_generator import render_html_from_pipeline_output
@@ -21,21 +21,43 @@ RATE_LIMIT_SECONDS: int = 120
 LOCK_KEY: str = "last_email_lock"
 LOCK_TTL: int = 160
 
-# Global Redis connection (reuse for all calls)
-_redis_instance = redis.Redis.from_url(REDIS_URL)
-
 def wait_for_rate_limit() -> None:
     """Wait if last email was sent within RATE_LIMIT_SECONDS (distributed lock via Redis).
-    
+
+    Uses Redis connection pool for thread-safe concurrent access with
+    automatic timeout and health checks.
+
     Raises:
         RuntimeError: If Redis connection fails.
     """
-    r = _redis_instance
+    try:
+        r = RedisClient.get_instance()
+    except redis.ConnectionError as e:
+        log_error(f"Redis unavailable: {str(e)}")
+        raise RuntimeError(f"Rate limit service unavailable: {str(e)}") from e
 
     # Acquire distributed lock
-    while not r.set(LOCK_KEY, "1", nx=True, ex=LOCK_TTL):
+    lock_acquired = False
+    retries = 0
+    max_retries = 5
+
+    while retries < max_retries:
+        try:
+            if r.set(LOCK_KEY, "1", nx=True, ex=LOCK_TTL):
+                lock_acquired = True
+                break
+        except redis.ConnectionError as e:
+            log_error(f"Redis lock error (retry {retries+1}): {str(e)}")
+            retries += 1
+            time.sleep(1)
+            continue
+
         log_warning("Another process holds the lock, waiting...")
         time.sleep(1)
+        retries += 1
+
+    if not lock_acquired:
+        raise RuntimeError("Failed to acquire rate limit lock after retries")
 
     try:
         last_sent = r.get(REDIS_RATE_LIMIT_KEY)
@@ -58,11 +80,15 @@ def wait_for_rate_limit() -> None:
             time.sleep(wait_time)
 
         r.set(REDIS_RATE_LIMIT_KEY, int(time.time()))
+
     except redis.ConnectionError as e:
         log_error(f"Redis connection failed in rate limit check: {str(e)}")
         raise RuntimeError(f"Rate limit check failed: {str(e)}") from e
     finally:
-        r.delete(LOCK_KEY)
+        try:
+            r.delete(LOCK_KEY)
+        except redis.ConnectionError:
+            log_warning("Failed to release lock, will expire in 160s")
 
 def _normalize_profession(profession: str | Profession) -> Profession | str:
     """Normalize profession input to Profession enum if possible.

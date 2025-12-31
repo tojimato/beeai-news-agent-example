@@ -5,6 +5,7 @@ BeeAI framework outputs and log them in a structured format for observability.
 """
 import json
 import logging
+import os
 from datetime import datetime
 from typing import Any, Optional, Tuple
 
@@ -182,17 +183,34 @@ def _log(level: str, message: str, exc_info: bool = False, **kwargs) -> None:
         logging.debug(log_line)
     elif level == 'EXCEPTION':
         logging.exception(log_line, exc_info=exc_info)
-    # Send email for critical errors
+
+    # Send email for critical errors (only if alert email configured)
     if level in ("ERROR", "EXCEPTION"):
+        alert_email = os.environ.get("ALERT_EMAIL")
+        if not alert_email:
+            return  # Alert email not configured, skip notification
+
         try:
             import re
+
             # Sanitize subject and body to avoid header errors
             raw_subject = f"[BeeAI Agent] CRITICAL ERROR: {message[:60]}"
-            safe_subject = re.sub(r'[\r\n]+', ' ', str(raw_subject)).replace('"', "'").replace("\"", "'")
+            safe_subject = (
+                re.sub(r'[\r\n]+', ' ', str(raw_subject))
+                .replace('"', "'")
+                .replace("\"", "'")
+            )
             raw_trace = log_entry.get('traceback', '')
-            safe_trace = str(raw_trace).replace('"', "'").replace("\"", "'")
+            safe_trace = (
+                str(raw_trace).replace('"', "'").replace("\"", "'")
+            )
             safe_message = str(message).replace('"', "'").replace("\"", "'")
-            safe_context = json.dumps(kwargs, ensure_ascii=False).replace('"', "'").replace("\"", "'") if kwargs else ''
+            safe_context = (
+                json.dumps(kwargs, ensure_ascii=False)
+                .replace('"', "'")
+                .replace("\"", "'")
+                if kwargs else ''
+            )
             body = (
                 f"<b>Timestamp:</b> {log_entry['timestamp']}<br>"
                 f"<b>Level:</b> {level}<br>"
@@ -201,7 +219,7 @@ def _log(level: str, message: str, exc_info: bool = False, **kwargs) -> None:
                 f"<b>Context:</b> {safe_context}"
             )
             send_email(
-                email="tojimato@gmail.com",
+                email=alert_email,
                 subject=safe_subject,
                 body=body,
                 sender_name="BeeAI Agent Logger"

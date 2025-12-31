@@ -1,11 +1,19 @@
 import json
 import time
+import signal
+import atexit
+from typing import Optional
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from pydantic import ValidationError
 
 from tasks.task_queue import send_daily_report
 from src.config.validation import RecipientsListModel
+from src.core.redis_client import RedisClient
 from src.utils.logger import log_info, log_error
+
+# Global scheduler reference for shutdown
+_scheduler: Optional[BackgroundScheduler] = None
 
 
 def _load_recipients() -> list[dict]:
@@ -48,17 +56,23 @@ def _load_recipients() -> list[dict]:
 
 def run_scheduler() -> None:
     """Schedule daily report jobs for each recipient at specified hour/minute.
-    
+
     Reads recipients from recipients.json and schedules jobs using APScheduler.
-    Each recipient must have: email, profession, name, hour, minute, language (optional).
+    Each recipient must have: email, profession, name, hour, minute, language
+    (optional).
+
+    Implements graceful shutdown handlers for SIGTERM/SIGINT signals and
+    ensures Redis pool cleanup on exit.
     """
+    global _scheduler
+
     try:
         recipients = _load_recipients()
     except RuntimeError as e:
         log_error(f"Failed to load recipients: {str(e)}")
         return
 
-    scheduler = BackgroundScheduler()
+    _scheduler = BackgroundScheduler()
 
     for idx, rec in enumerate(recipients):
         try:
@@ -72,7 +86,7 @@ def run_scheduler() -> None:
                 continue
 
             # Schedule job
-            scheduler.add_job(
+            _scheduler.add_job(
                 send_daily_report,
                 'cron',
                 hour=rec['hour'],
@@ -92,15 +106,45 @@ def run_scheduler() -> None:
         except Exception as e:
             log_error(f"Failed to schedule recipient {idx}: {str(e)}")
 
-    try:
-        scheduler.start()
-        log_info('APScheduler started. Press Ctrl+C to exit.')
+    def shutdown_scheduler(signum=None, frame=None) -> None:
+        """Gracefully shutdown scheduler and cleanup resources.
 
+        Args:
+            signum: Signal number (for signal handler).
+            frame: Stack frame (for signal handler).
+        """
+        log_info("📋 Scheduler shutdown signal received")
+        try:
+            if _scheduler and _scheduler.running:
+                log_info("Waiting for pending jobs...")
+                _scheduler.shutdown(wait=True)
+                log_info("✅ Scheduler shutdown complete")
+        except Exception as e:
+            log_error(f"Error during scheduler shutdown: {e}")
+
+        # Cleanup Redis pool
+        try:
+            RedisClient.close()
+        except Exception as e:
+            log_error(f"Error closing Redis: {e}")
+
+        exit(0)
+
+    # Register cleanup handlers for graceful shutdown
+    atexit.register(shutdown_scheduler)
+    signal.signal(signal.SIGTERM, shutdown_scheduler)
+    signal.signal(signal.SIGINT, shutdown_scheduler)
+
+    try:
+        _scheduler.start()
+        log_info("✅ APScheduler started. Press Ctrl+C to exit.")
+
+        # Keep scheduler running
         while True:
             time.sleep(2)
+
     except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
-        log_info("APScheduler shutdown complete.")
+        shutdown_scheduler()
     except Exception as e:
         log_error(f"Scheduler error: {str(e)}")
-        scheduler.shutdown()
+        shutdown_scheduler()
