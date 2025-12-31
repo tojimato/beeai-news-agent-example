@@ -162,3 +162,7 @@ def run_scheduler() -> None:
         log_error(f"Scheduler error: {error_msg}")
         send_error_alert("Scheduler Error", "Scheduler crash", error_msg)
         shutdown_scheduler()
+
+
+if __name__ == "__main__":
+    run_scheduler()

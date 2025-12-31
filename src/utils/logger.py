@@ -13,23 +13,69 @@ from typing import Any, Optional, Tuple
 from src.config.settings import LOG_FILE
 
 
+class JsonFormatter(logging.Formatter):
+    """Custom formatter to output all logs as JSON."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        """Format log record as JSON with proper escaping."""
+        # Get message safely
+        try:
+            message = record.getMessage()
+        except Exception:
+            message = str(record.msg)
+
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "level": record.levelname,
+            "message": message
+        }
+
+        if record.exc_info:
+            import traceback
+            log_entry["traceback"] = "".join(
+                traceback.format_exception(*record.exc_info)
+            )
+
+        try:
+            return json.dumps(log_entry, ensure_ascii=False)
+        except (TypeError, ValueError) as e:
+            # Fallback if JSON encoding fails
+            safe_message = str(message).replace('"', "'").replace("\n", "\\n")
+            return json.dumps({
+                "timestamp": datetime.now().isoformat(),
+                "level": record.levelname,
+                "message": safe_message,
+                "error": f"JSON encoding failed: {str(e)}"
+            }, ensure_ascii=False)
+
+
 def _setup_logging() -> None:
     """Initialize file logging with fallback to console on errors.
 
     Ensures log directory exists and file logging is configured.
     If file operations fail, falls back to console-only logging.
+    Also configures APScheduler logs to use JSON format.
     """
     try:
         log_dir = os.path.dirname(LOG_FILE)
         if log_dir and not os.path.exists(log_dir):
             os.makedirs(log_dir, exist_ok=True)
 
-        logging.basicConfig(
-            filename=LOG_FILE,
-            level=logging.INFO,
-            format='%(message)s',
-            encoding='utf-8'
-        )
+        # Create file handler with JSON formatter
+        file_handler = logging.FileHandler(LOG_FILE, encoding='utf-8')
+        file_handler.setFormatter(JsonFormatter())
+
+        # Configure root logger
+        root_logger = logging.getLogger()
+        root_logger.setLevel(logging.INFO)
+        root_logger.addHandler(file_handler)
+
+        # Configure APScheduler to reduce noise - only log INFO and above
+        apscheduler_logger = logging.getLogger('apscheduler')
+        apscheduler_logger.setLevel(logging.WARNING)  # Reduce APScheduler verbosity
+        apscheduler_logger.handlers.clear()
+        apscheduler_logger.propagate = True
+
     except (OSError, IOError) as e:
         # File logging failed, fallback to console
         print(f"⚠️  File logging disabled: {e}", file=sys.stderr)
@@ -104,9 +150,17 @@ def log_token_usage(
         f"   Cost: ${total_cost_usd:.6f}"
     )
 
-    # Log to file (simple JSON, no complex error handling)
+    # Log to file - use special marker for token usage data
     try:
-        logging.info(json.dumps(log_data, ensure_ascii=False))
+        logger = logging.getLogger(__name__)
+        # Format as readable string - JsonFormatter will wrap it
+        log_msg = (
+            f"[TOKEN_USAGE] {task_name} | "
+            f"Tokens: {total_tokens} (prompt: {prompt_tokens}, "
+            f"completion: {completion_tokens}, cached: {cached_tokens}) | "
+            f"Cost: ${total_cost_usd:.6f}"
+        )
+        logger.info(log_msg)
     except Exception:
         # Fail silently - don't break the main pipeline
         pass
@@ -181,7 +235,7 @@ def log_exception(message: str) -> None:
 
 
 def _write_json_log(level: str, message: str, exc_info: bool = False) -> None:
-    """Write structured JSON log entry to file.
+    """Write structured JSON log entry to file with correct level.
 
     Args:
         level: Log level (INFO, WARNING, ERROR, DEBUG, EXCEPTION).
@@ -189,18 +243,23 @@ def _write_json_log(level: str, message: str, exc_info: bool = False) -> None:
         exc_info: Include traceback if True.
     """
     try:
-        log_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "level": level,
-            "message": message
-        }
+        # Use logging directly - JsonFormatter will handle JSON conversion
+        logger = logging.getLogger(__name__)
 
-        if exc_info:
-            import traceback
-            log_entry["traceback"] = traceback.format_exc()
-
-        log_line = json.dumps(log_entry, ensure_ascii=False)
-        logging.info(log_line)
+        # Use correct logging level - pass exc_info to logger so formatter
+        # can extract traceback into separate field
+        if level == "DEBUG":
+            logger.debug(message, exc_info=exc_info)
+        elif level == "INFO":
+            logger.info(message, exc_info=exc_info)
+        elif level == "WARNING":
+            logger.warning(message, exc_info=exc_info)
+        elif level == "ERROR":
+            logger.error(message, exc_info=exc_info)
+        elif level == "EXCEPTION":
+            logger.exception(message)
+        else:
+            logger.info(message, exc_info=exc_info)
     except Exception:
         # Fail silently - don't break the main pipeline
         pass
