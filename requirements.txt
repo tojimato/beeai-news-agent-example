@@ -1,6 +1,9 @@
 apscheduler
 beeai-framework
+email-validator
 feedparser
 markdown
+pydantic>=2.0
 pytest
 python-dotenv==1.0.1
+redis

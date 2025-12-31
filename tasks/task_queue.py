@@ -4,10 +4,12 @@ import asyncio
 
 # Third-party imports
 import redis
+from pydantic import ValidationError
 
 # Local imports
 from src.config.professions import Profession
 from src.config.settings import REDIS_URL
+from src.config.validation import PipelineInputModel
 from src.utils.email_service import send_email
 from src.pipelines.strategic_pipeline import StrategicPipeline, PipelineOutput
 from src.report.report_generator import render_html_from_pipeline_output
@@ -123,6 +125,15 @@ def _execute_pipeline_with_retry(
         RuntimeError: If pipeline execution fails after retries.
     """
     try:
+        # Validate pipeline inputs
+        try:
+            PipelineInputModel(profession=str(profession), language=language)
+        except ValidationError as e:
+            error_details = ", ".join(
+                f"{err['loc'][0]}: {err['msg']}" for err in e.errors()
+            )
+            raise ValueError(f"Invalid pipeline inputs: {error_details}") from e
+        
         pipeline = StrategicPipeline(profession=profession, language=language)
         output: PipelineOutput = asyncio.run(pipeline.execute())
         return output
