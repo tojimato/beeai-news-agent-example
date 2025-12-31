@@ -19,12 +19,12 @@ class StrategistAgent(BaseAgent):
     Now supports profession-specific prompt templates.
     """
 
-    def __init__(self, llm_service: LLMService, profession: Profession) -> None:
-        """Initialize strategist agent with profession.
-        
+    def __init__(self, llm_service: LLMService, profession: Profession, language: str = "tr") -> None:
+        """Initialize strategist agent with profession and language.
         Args:
             llm_service: Service for model access.
             profession: Profession enum for prompt adaptation.
+            language: Language code ("tr" or "en").
         """
         super().__init__(
             name="StrategistAgent",
@@ -32,7 +32,8 @@ class StrategistAgent(BaseAgent):
             task_name="Strategic Synthesis"
         )
         self.profession = profession
-        self.prompt_template = StrategistPromptTemplate(profession)
+        self.language = language
+        self.prompt_template = StrategistPromptTemplate(profession, language=language)
 
     def get_system_prompt(self) -> str:
         """Get system prompt for strategic analysis (profession-specific)."""

@@ -84,7 +84,7 @@ def _normalize_profession(profession: str | Profession) -> Profession | str:
         return profession
 
 
-def send_daily_report(email: str, profession: str | Profession, name: str) -> None:
+def send_daily_report(email: str, profession: str | Profession, name: str, language: str = "tr") -> None:
     """
     Send a daily report email for a given profession and user.
 
@@ -92,20 +92,21 @@ def send_daily_report(email: str, profession: str | Profession, name: str) -> No
         email: Recipient email address.
         profession: Profession as string or Profession enum.
         name: Sender name for the email.
+        language: Language code ("tr" or "en").
     """
     # Normalize profession
     normalized_profession = _normalize_profession(profession)
 
-    log_info(f"Job triggered for {email}, {normalized_profession}, {name}")
+    log_info(f"Job triggered for {email}, {normalized_profession}, {name}, {language}")
 
     wait_for_rate_limit()
 
-    log_info(f"Continuing to send report for {email}, {normalized_profession}, {name}")
+    log_info(f"Continuing to send report for {email}, {normalized_profession}, {name}, {language}")
 
-    pipeline = StrategicPipeline(profession=normalized_profession)
+    pipeline = StrategicPipeline(profession=normalized_profession, language=language)
     output: PipelineOutput = asyncio.run(pipeline.execute())
 
-    body = render_html_from_pipeline_output(output, name)
+    body = render_html_from_pipeline_output(output, name, language=language)
 
     profession_str = (
         normalized_profession.value if hasattr(normalized_profession, 'value') else str(normalized_profession)

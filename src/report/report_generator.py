@@ -133,19 +133,31 @@ def save_as_html(
     return filename
 
 
-def render_html_from_pipeline_output(output, name: str) -> str:
-    """Render a minimal HTML email body from PipelineOutput, converting markdown to HTML."""
-    # Ensure name is properly encoded for HTML
+def render_html_from_pipeline_output(output, name: str, language: str = "tr") -> str:
+    """Render a minimal HTML email body from PipelineOutput, converting markdown to HTML.
+    Supports Turkish and English email/report bodies.
+    """
     safe_name = html.escape(name)
     strategic_html = markdown.markdown(output.strategic_report, extensions=['tables', 'fenced_code'])
     review_html = markdown.markdown(output.review_analysis, extensions=['tables', 'fenced_code'])
-    html_body = f"""
-    <html><body>
-    <h2>Hi {safe_name},</h2>
-    <p>Here is your daily strategy report:</p>
-    {strategic_html}
-    {review_html}
-    <br><p>Best regards,<br>BeeAI News Agent</p>
-    </body></html>
-    """
+    if language == "tr":
+        html_body = f"""
+        <html><body>
+        <h2>Merhaba {safe_name},</h2>
+        <p>Günün strateji raporunuz aşağıdadır:</p>
+        {strategic_html}
+        {review_html}
+        <br><p>Saygılarımızla,<br>BeeAI Haber Ajansı</p>
+        </body></html>
+        """
+    else:
+        html_body = f"""
+        <html><body>
+        <h2>Hi {safe_name},</h2>
+        <p>Here is your daily strategy report:</p>
+        {strategic_html}
+        {review_html}
+        <br><p>Best regards,<br>BeeAI News Agent</p>
+        </body></html>
+        """
     return html_body

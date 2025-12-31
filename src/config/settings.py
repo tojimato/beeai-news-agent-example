@@ -6,6 +6,7 @@ core application constants for RSS feed aggregation and data processing.
 
 import os
 from typing import Final
+from enum import Enum
 
 from dotenv import load_dotenv
 
@@ -134,3 +135,11 @@ SMTP_HOST: Final[str] = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT: Final[int] = int(os.environ.get("SMTP_PORT", 465))
 SMTP_USER: Final[str] = os.environ.get("SMTP_USER", "your@email.com")
 SMTP_PASS: Final[str] = os.environ.get("SMTP_PASS", "yourpassword")
+
+# ============================================================================
+# Language Configuration
+# ============================================================================
+
+class Language(Enum):
+    TURKISH = "tr"
+    ENGLISH = "en"

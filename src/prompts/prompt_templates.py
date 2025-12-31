@@ -1,3 +1,4 @@
+from src.prompts.header_translations import HEADER_TRANSLATIONS
 """
 Profession-agnostic prompt templates for strategic analysis agents.
 
@@ -43,35 +44,39 @@ class StrategistPromptTemplate:
     Generates strategist agent prompts for profession-specific planning.
     Follows line length and string formatting best practices.
     """
-    def __init__(self, profession: Profession) -> None:
+    def __init__(self, profession: Profession, language: str = "tr") -> None:
         self.profession = profession
         self.config: ProfessionConfig = get_profession_config(profession)
+        self.language = language
 
     def generate(self) -> str:
+        lang = self.language if self.language in HEADER_TRANSLATIONS else "en"
+        h = HEADER_TRANSLATIONS[lang]
         applicability = '\n'.join(
             f"  - {domain}" for domain in self.config.applicability_domains
         )
         success_metrics = ', '.join(self.config.success_metrics)
         key_risks = ', '.join(self.config.risk_factors)
         prompt = (
+            f"Return all results in {self.language.upper()} language.\n\n"
             f"You are a strategic analyst specializing in {self.config.display_name} intelligence.\n\n"
             "Your task: Analyze the distilled data provided and summarize most important global developments for your profession.\n\n"
             "Identify 3-4 concrete opportunities or actions that directly help achieve the following Success Metrics, considering the Key Risks.\n"
             "If the data is missing or unclear on any important point, use your own expertise and general knowledge to fill in the gaps.\n\n"
             f"## Success Metrics:\n- {success_metrics}\n\n"
             f"## Key Risks:\n- {key_risks}\n\n"
-            "## Output Format (Markdown, always use this structure):\n"
-            "# Strategic Intelligence Report\n"
-            "## Summary\n"
-            "- [Short summary: what matters today for your profession, 2-3 sentences]\n"
-            "\n## Opportunities & Actions (3-4 items)\n"
+            f"## Output Format (Markdown, always use this structure):\n"
+            f"# Strategic Intelligence Report\n"
+            f"## {h['summary']}\n"
+            f"- [Short summary: what matters today for your profession, 2-3 sentences]\n"
+            f"\n## {h['opportunities']} (3-4 items)\n"
             "For each, use this format:\n"
-            "### [Opportunity/Action Title]\n"
-            "- **Why Now:** [1 sentence, why this is timely]"
-            "- **Action Steps:** [How to achieve the relevant success metric(s)]"
-            "- **Risk Note:** [Which key risk(s) are most relevant, and how to mitigate]"
-            "- **Sources:** [List source urls as external link markdown format][External link to title](https://www.genome.gov/)\n"
-            "\n## Applicability Domains\n"
+            f"### [{h['opportunity_title']}]\n"
+            f"- **{h['why_now']}:** [1 sentence, why this is timely]"
+            f"- **{h['action_steps']}:** [How to achieve the relevant success metric(s)]"
+            f"- **{h['risk_note']}:** [Which key risk(s) are most relevant, and how to mitigate]"
+            f"- **{h['sources']}:** [List source urls as external link markdown format][External link to title](https://www.genome.gov/)\n"
+            f"\n## {h['applicability']}\n"
             f"{applicability}\n"
         )
         return prompt
@@ -81,14 +86,16 @@ class ReviewerPromptTemplate:
     Generates reviewer agent prompts for profession-specific critical analysis.
     Follows line length and string formatting best practices.
     """
-    def __init__(self, profession: Profession) -> None:
+    def __init__(self, profession: Profession, language: str = "tr") -> None:
         self.profession = profession
         self.config: ProfessionConfig = get_profession_config(profession)
+        self.language = language
 
     def generate(self) -> str:
         risk_categories = ', '.join(self.config.risk_factors)
         success_metrics = ', '.join(self.config.success_metrics)
         prompt = (
+            f"Return all results in {self.language.upper()} language.\n\n"
             f"You are a critical reviewer for {self.config.display_name} strategy.\n\n"
             "Your task: For each opportunity/action, briefly identify the most critical risk, the weakest assumption, and any missing perspective.\n\n"
             f"## Key Risks: {risk_categories}\n"

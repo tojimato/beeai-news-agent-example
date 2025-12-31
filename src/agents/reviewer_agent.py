@@ -19,12 +19,12 @@ class ReviewerAgent(BaseAgent):
     Now supports profession-specific prompt templates.
     """
 
-    def __init__(self, llm_service: LLMService, profession: Profession) -> None:
-        """Initialize reviewer agent with profession.
-        
+    def __init__(self, llm_service: LLMService, profession: Profession, language: str = "tr") -> None:
+        """Initialize reviewer agent with profession and language.
         Args:
             llm_service: Service for model access.
             profession: Profession enum for prompt adaptation.
+            language: Language code ("tr" or "en").
         """
         super().__init__(
             name="ReviewerAgent",
@@ -32,7 +32,8 @@ class ReviewerAgent(BaseAgent):
             task_name="Peer Review"
         )
         self.profession = profession
-        self.prompt_template = ReviewerPromptTemplate(profession)
+        self.language = language
+        self.prompt_template = ReviewerPromptTemplate(profession, language=language)
 
     def get_system_prompt(self) -> str:
         """Get system prompt for critical review (profession-specific).

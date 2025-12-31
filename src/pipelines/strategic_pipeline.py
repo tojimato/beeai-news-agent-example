@@ -71,6 +71,7 @@ class StrategicPipeline:
         data_processor: Optional[DataProcessor] = None,
         llm_service: Optional[LLMService] = None,
         profession: Profession = Profession.SOLO_DEVELOPER,
+        language: str = "tr",
     ) -> None:
         """Initialize pipeline with dependencies (Dependency Injection).
         
@@ -79,14 +80,15 @@ class StrategicPipeline:
             data_processor: Data transformation service. Creates default if None.
             llm_service: LLM model service. Creates default if None.
         """
+        self.language: str = language
         self.rss_service: RSSService = rss_service or RSSService(profession=profession)
         self.data_processor: DataProcessor = data_processor or DataProcessor()
         self.llm_service: LLMService = llm_service or LLMService()
 
-        # Initialize agents with shared LLM service and profession
+        # Initialize agents with shared LLM service, profession, and language
         self.distiller_agent: DistillerAgent = DistillerAgent(self.llm_service)
-        self.strategist_agent: StrategistAgent = StrategistAgent(self.llm_service, profession)
-        self.reviewer_agent: ReviewerAgent = ReviewerAgent(self.llm_service, profession)
+        self.strategist_agent: StrategistAgent = StrategistAgent(self.llm_service, profession, language=language)
+        self.reviewer_agent: ReviewerAgent = ReviewerAgent(self.llm_service, profession, language=language)
 
         # Internal state for metric tracking
         self._agent_outputs: list = []

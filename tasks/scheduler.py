@@ -22,7 +22,7 @@ def run_scheduler() -> None:
             'cron',
             hour=rec['hour'],
             minute=rec['minute'],
-            args=(rec['email'], rec['profession'], rec['name']),
+            args=(rec['email'], rec['profession'], rec['name'], rec.get('language', 'tr')),
             id=f'send-report-{idx}'
         )
 
