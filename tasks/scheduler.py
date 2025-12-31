@@ -11,6 +11,7 @@ from tasks.task_queue import send_daily_report
 from src.config.validation import RecipientsListModel
 from src.core.redis_client import RedisClient
 from src.utils.logger import log_info, log_error
+from src.utils.error_alerts import send_error_alert
 
 # Global scheduler reference for shutdown
 _scheduler: Optional[BackgroundScheduler] = None
@@ -121,12 +122,23 @@ def run_scheduler() -> None:
                 log_info("✅ Scheduler shutdown complete")
         except Exception as e:
             log_error(f"Error during scheduler shutdown: {e}")
+            send_error_alert(
+                "Scheduler Error",
+                "Failed to shutdown scheduler",
+                str(e)
+            )
 
         # Cleanup Redis pool
         try:
             RedisClient.close()
+            log_info("✅ Redis pool closed")
         except Exception as e:
             log_error(f"Error closing Redis: {e}")
+            send_error_alert(
+                "Redis Error",
+                "Failed to close Redis connection pool",
+                str(e)
+            )
 
         exit(0)
 
@@ -146,5 +158,7 @@ def run_scheduler() -> None:
     except (KeyboardInterrupt, SystemExit):
         shutdown_scheduler()
     except Exception as e:
-        log_error(f"Scheduler error: {str(e)}")
+        error_msg = str(e)
+        log_error(f"Scheduler error: {error_msg}")
+        send_error_alert("Scheduler Error", "Scheduler crash", error_msg)
         shutdown_scheduler()
