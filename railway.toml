@@ -1,0 +1,7 @@
+[build]
+builder = "dockerfile"
+
+[deploy]
+startCommand = "python -m tasks.scheduler"
+restartPolicyMaxRetries = 5
+restartPolicyWindow = 60
