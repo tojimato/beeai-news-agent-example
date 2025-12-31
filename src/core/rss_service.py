@@ -76,9 +76,10 @@ class RSSService:
         """
         lines: list[str] = []
 
-        print("\n" + "═" * 60)
-        print("📡 SMART DATA ACQUISITION")
-        print("═" * 60)
+        from src.utils.logger import log_info, log_warning
+        log_info("\n" + "═" * 60)
+        log_info("📡 SMART DATA ACQUISITION")
+        log_info("═" * 60)
 
         for source_name, feed_url in self.rss_sources.items():
             try:
@@ -92,7 +93,7 @@ class RSSService:
                     self.max_entries_per_source
                 )
 
-                print(f"✅ {source_name}: Found {len(relevant_entries)} relevant items")
+                log_info(f"✅ {source_name}: Found {len(relevant_entries)} relevant items")
 
                 for entry in relevant_entries:
                     title = getattr(entry, 'title', '').strip()
@@ -103,7 +104,7 @@ class RSSService:
                     lines.append(f"{title} - {link}")
 
             except Exception as e:
-                print(f"⚠️ Error fetching {source_name}: {e}")
+                log_warning(f"⚠️ Error fetching {source_name}: {e}")
 
         if not lines:
             raise RuntimeError("No relevant RSS content found. Pipeline execution halted.")

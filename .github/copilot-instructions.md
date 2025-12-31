@@ -16,6 +16,9 @@ We are building a multi-agent LLM pipeline using the **BeeAI framework**. The pr
 - **Environment:** Secrets must stay in `.env.local` (never hardcode keys).
 
 ## 4. Coding Behavior
+- **Senior Engineer Analysis:** Before and after every task, provide a concise analysis and summary from a senior software engineer perspective. This should include:
+	- Pre-task: Reasoning, risks, architectural/contextual impact, and expected outcome.
+	- Post-task: What was changed, why, any trade-offs, and how the result aligns with best practices and project goals.
 - **Refactoring:** Proactively suggest refactors for "Legacy" or "Messy" code based on our Clean Code standards.
 - **Language:** All new code, docstrings, and comments must be in **English**.
 - **Efficiency:** Prioritize readability and maintainability as defined in the primary standards file.

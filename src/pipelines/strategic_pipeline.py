@@ -17,8 +17,7 @@ from src.core.data_processor import DataProcessor
 from src.core.llm_service import LLMService
 from src.core.rss_service import RSSService
 from src.report.report_generator import save_as_html
-from src.utils.logger import summarize_total_usage
-
+from src.utils.logger import summarize_total_usage, log_info
 
 @dataclass
 class PipelineOutput:
@@ -112,9 +111,10 @@ class StrategicPipeline:
             RuntimeError: If any pipeline stage fails.
         """
         try:
-            print("\n" + "═" * 70)
-            print("🚀 STRATEGIC INTELLIGENCE PIPELINE - STARTED")
-            print("═" * 70)
+            
+            log_info("\n" + "═" * 70)
+            log_info("🚀 STRATEGIC INTELLIGENCE PIPELINE - STARTED")
+            log_info("═" * 70)
 
             # Stage 1: FETCH
             raw_data: str = await self._stage_fetch()
@@ -136,9 +136,9 @@ class StrategicPipeline:
                 review_analysis
             )
 
-            print("\n" + "═" * 70)
-            print("✅ PIPELINE COMPLETED SUCCESSFULLY")
-            print("═" * 70)
+            log_info("\n" + "═" * 70)
+            log_info("✅ PIPELINE COMPLETED SUCCESSFULLY")
+            log_info("═" * 70)
 
             return output
 
@@ -154,10 +154,10 @@ class StrategicPipeline:
         Raises:
             RuntimeError: If feed aggregation fails.
         """
-        print("\n📡 STAGE 1: Aggregating market feeds...")
+        log_info("\n📡 STAGE 1: Aggregating market feeds...")
         try:
             raw_data: str = await self.rss_service.fetch_all_feeds()
-            print(f"✅ Stage 1 complete: {len(raw_data)} characters aggregated")
+            log_info(f"✅ Stage 1 complete: {len(raw_data)} characters aggregated")
             return raw_data
         except Exception as e:
             raise RuntimeError(f"Stage 1 (FETCH) failed: {str(e)}") from e
@@ -174,14 +174,14 @@ class StrategicPipeline:
         Raises:
             RuntimeError: If distillation fails.
         """
-        print("\n🧠 STAGE 2: Distilling insights...")
+        log_info("\n🧠 STAGE 2: Distilling insights...")
         try:
             distiller_response = await self.distiller_agent.execute(raw_data)
             self._agent_outputs.append(distiller_response)
 
             distilled_data: str = self.distiller_agent.get_distilled_text(distiller_response)
-            print(f"✅ Stage 2 complete: {len(distilled_data)} characters distilled")
-            print(f"\n--- DEBUG: Distilled Data ---\n{distilled_data[:1300]}...\n---\n")
+            log_info(f"✅ Stage 2 complete: {len(distilled_data)} characters distilled")
+            log_info(f"\n--- DEBUG: Distilled Data ---\n{distilled_data[:1300]}...\n---\n")
 
             return distilled_data
 
@@ -200,13 +200,13 @@ class StrategicPipeline:
         Raises:
             RuntimeError: If analysis fails.
         """
-        print("\n📊 STAGE 3: Building strategic report...")
+        log_info("\n📊 STAGE 3: Building strategic report...")
         try:
             strategist_response = await self.strategist_agent.execute(distilled_data)
             self._agent_outputs.append(strategist_response)
 
             strategic_report: str = self.strategist_agent.get_report_text(strategist_response)
-            print(f"✅ Stage 3 complete: {len(strategic_report)} characters analyzed")
+            log_info(f"✅ Stage 3 complete: {len(strategic_report)} characters analyzed")
 
             return strategic_report
 
@@ -225,13 +225,13 @@ class StrategicPipeline:
         Raises:
             RuntimeError: If review fails.
         """
-        print("\n🕵️ STAGE 4: Peer-reviewing strategy...")
+        log_info("\n🕵️ STAGE 4: Peer-reviewing strategy...")
         try:
             reviewer_response = await self.reviewer_agent.execute(strategic_report)
             self._agent_outputs.append(reviewer_response)
 
             review_analysis: str = self.reviewer_agent.get_review_text(reviewer_response)
-            print(f"✅ Stage 4 complete: {len(review_analysis)} characters reviewed")
+            log_info(f"✅ Stage 4 complete: {len(review_analysis)} characters reviewed")
 
             return review_analysis
 
@@ -259,7 +259,7 @@ class StrategicPipeline:
         Raises:
             RuntimeError: If finalization fails.
         """
-        print("\n📄 STAGE 5: Finalizing outputs...")
+        log_info("\n📄 STAGE 5: Finalizing outputs...")
         try:
             # Combine outputs into final report
             full_report: str = (
@@ -274,7 +274,7 @@ class StrategicPipeline:
             # Log aggregated metrics
             summarize_total_usage(*self._agent_outputs)
 
-            print(f"✅ Stage 5 complete: Report saved to {html_file}")
+            log_info(f"✅ Stage 5 complete: Report saved to {html_file}")
 
             return PipelineOutput(
                 raw_data=raw_data,
@@ -298,7 +298,8 @@ class StrategicPipeline:
             RuntimeError: Always re-raises with pipeline context.
         """
         error_msg = f"Pipeline execution failed: {str(error)}"
-        print(f"\n❌ {error_msg}")
+        from src.utils.logger import log_error
+        log_error(f"\n❌ {error_msg}")
         raise RuntimeError(error_msg) from error
 
     def get_pipeline_info(self) -> dict[str, str]:

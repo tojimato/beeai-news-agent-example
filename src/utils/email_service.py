@@ -4,15 +4,15 @@ from email.header import Header
 from src.config.settings import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
 
 def send_email(email: str, subject: str, body: str, sender_name: str = None) -> None:
-    # Ensure UTF-8 encoding for all headers and body
+    # Ensure UTF-8 encoding for all headers and body, set all headers as plain str
     msg = EmailMessage()
-    msg['Subject'] = Header(subject, 'utf-8')
+    msg['Subject'] = str(subject)
     if sender_name:
-        msg['From'] = str(Header(sender_name, 'utf-8')) + f" <{SMTP_USER}>"
+        msg['From'] = f"{str(sender_name)} <{SMTP_USER}>"
     else:
         msg['From'] = SMTP_USER
     msg['To'] = email
-    msg.set_content(body, subtype='html')
+    msg.set_content(str(body), subtype='html')
 
     if SMTP_PORT == 465:
         with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:

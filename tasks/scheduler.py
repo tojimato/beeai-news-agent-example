@@ -5,7 +5,9 @@ import json
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from task_queue import send_daily_report
+from src.utils.logger import log_info
 
 def run_scheduler():
     """Schedules daily report jobs for each recipient at specified hour/minute."""
@@ -23,7 +25,7 @@ def run_scheduler():
             id=f'send-report-{idx}'
         )
     scheduler.start()
-    print('APScheduler started. Press Ctrl+C to exit.')
+    log_info('APScheduler started. Press Ctrl+C to exit.')
     try:
         while True:
             time.sleep(2)

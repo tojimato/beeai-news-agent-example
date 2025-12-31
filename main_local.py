@@ -13,6 +13,7 @@ import logging
 
 from src.config.professions import Profession
 from src.pipelines.strategic_pipeline import StrategicPipeline, PipelineOutput
+from src.utils.logger import log_info
 
 
 async def main() -> None:
@@ -52,8 +53,8 @@ async def main() -> None:
     output: PipelineOutput = await pipeline.execute()
 
     # Display results
-    print(f"\n✅ HTML Report: {output.html_file}")
-    print(f"📊 Total output size: {len(output.full_report)} characters")
+    log_info(f"\n✅ HTML Report: {output.html_file}")
+    log_info(f"📊 Total output size: {len(output.full_report)} characters")
 
 
 if __name__ == "__main__":
