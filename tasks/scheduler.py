@@ -2,6 +2,7 @@ import json
 import time
 import signal
 import atexit
+import logging
 from typing import Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -150,10 +151,32 @@ def run_scheduler() -> None:
     try:
         _scheduler.start()
         log_info("✅ APScheduler started. Press Ctrl+C to exit.")
+        log_info("🔄 Scheduler heartbeat: monitoring active jobs")
 
-        # Keep scheduler running
+        # Keep scheduler running with periodic health checks
+        heartbeat_interval = 60  # Log every 60 seconds
+        last_heartbeat = time.time()
+
         while True:
-            time.sleep(2)
+            try:
+                time.sleep(2)
+
+                # Periodic heartbeat to prevent Railway sleep
+                current_time = time.time()
+                if current_time - last_heartbeat >= heartbeat_interval:
+                    job_count = len(_scheduler.get_jobs())
+                    log_info(
+                        f"💓 Scheduler heartbeat: {job_count} jobs scheduled, "
+                        f"running={_scheduler.running}"
+                    )
+                    last_heartbeat = current_time
+
+            except KeyboardInterrupt:
+                shutdown_scheduler()
+            except Exception as e:
+                log_error(f"Heartbeat error: {str(e)}")
+                # Continue running despite heartbeat error
+                continue
 
     except (KeyboardInterrupt, SystemExit):
         shutdown_scheduler()
