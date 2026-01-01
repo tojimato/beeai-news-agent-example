@@ -5,7 +5,6 @@ builder = "dockerfile"
 startCommand = "python -m tasks.scheduler"
 restartPolicyMaxRetries = 5
 restartPolicyWindow = 60
-healthcheckPath = "/"
 
 # Worker process - no timeout
 [processes.worker]
