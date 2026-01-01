@@ -66,7 +66,7 @@ class StrategistPromptTemplate:
             f"## Success Metrics:\n- {success_metrics}\n\n"
             f"## Key Risks:\n- {key_risks}\n\n"
             f"## Output Format (Markdown, always use this structure):\n"
-            f"# Strategic Intelligence Report\n"
+            f"# {h['report_title']}\n"
             f"## {h['summary']}\n"
             f"- [Short summary: what matters today for your profession, 2-3 sentences]\n"
             f"\n## {h['opportunities']} (3-4 items)\n"
@@ -76,7 +76,7 @@ class StrategistPromptTemplate:
             f"- **{h['action_steps']}:** [How to achieve the relevant success metric(s)]"
             f"- **{h['risk_note']}:** [Which key risk(s) are most relevant, and how to mitigate]"
             f"- **{h['sources']}:** [List source urls as external link markdown format][External link to title](https://www.genome.gov/)\n"
-            f"\n## {h['applicability']}\n"
+            f"\n## {h['applicability']} in {self.language.upper()} language.\n"
             f"{applicability}\n"
         )
         return prompt

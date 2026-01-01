@@ -14,6 +14,7 @@ HEADER_TRANSLATIONS = {
         "applicability": "Applicability Domains",
         "confidence": "Overall Confidence Level",
         "critique": "Critique",
+        "report_title": "Strategic Intelligence Report",
     },
     "tr": {
         "summary": "Özet",
@@ -26,5 +27,6 @@ HEADER_TRANSLATIONS = {
         "applicability": "Uygulama Alanları",
         "confidence": "Genel Güven Seviyesi",
         "critique": "Eleştiri",
+        "report_title": "Stratejik İstihbarat Raporu",
     }
 }
