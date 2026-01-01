@@ -3,7 +3,7 @@
 Decoupled from logger to prevent circular dependencies and recursion.
 Call this directly from critical error handlers (Redis, scheduler, etc).
 """
-import os
+from src.config.settings import ALERT_EMAIL
 from src.utils.email_service import send_email
 
 
@@ -15,8 +15,7 @@ def send_error_alert(error_type: str, message: str, details: str = "") -> None:
         message: Brief error message (will be email subject).
         details: Optional detailed error information (will be email body).
     """
-    alert_email = os.environ.get("ALERT_EMAIL")
-    if not alert_email:
+    if not ALERT_EMAIL:
         # No alert email configured, skip
         return
 
@@ -27,7 +26,7 @@ def send_error_alert(error_type: str, message: str, details: str = "") -> None:
             if details else ""
         )
         send_email(
-            email=alert_email,
+            email=ALERT_EMAIL,
             subject=subject,
             body=body,
             sender_name="BeeAI Alert Service"

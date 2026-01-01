@@ -128,13 +128,32 @@ LOG_FILE: Final[str] = "agent_usage.log"
 """File path for token usage and cost logging."""
 
 # ============================================================================
-# SMTP Email Configuration
+# Email Service Configuration
 # ============================================================================
 
+EMAIL_PROVIDER: Final[str] = os.environ.get("EMAIL_PROVIDER", "smtp")
+"""Email provider: 'smtp' or 'resend'."""
+
+RESEND_API_KEY: Final[str] = os.environ.get("RESEND_API_KEY", "")
+"""API key for Resend email service."""
+
+RESEND_FROM_EMAIL: Final[str] = os.environ.get("RESEND_FROM_EMAIL", "onboarding@resend.dev")
+"""From email address for Resend (must be verified domain)."""
+
 SMTP_HOST: Final[str] = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+"""SMTP server hostname."""
+
 SMTP_PORT: Final[int] = int(os.environ.get("SMTP_PORT", 465))
+"""SMTP server port."""
+
 SMTP_USER: Final[str] = os.environ.get("SMTP_USER", "your@email.com")
+"""SMTP authentication username."""
+
 SMTP_PASS: Final[str] = os.environ.get("SMTP_PASS", "yourpassword")
+"""SMTP authentication password."""
+
+ALERT_EMAIL: Final[str] = os.environ.get("ALERT_EMAIL", "")
+"""Email address for error alerts."""
 
 # ============================================================================
 # Language Configuration
