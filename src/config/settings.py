@@ -28,14 +28,7 @@ RSS_SOURCES: Final[dict[str, dict[str, str]]] = {
     "default": {
         "McKinsey_Insights": "https://www.mckinsey.com/insights/rss",
         "Forrester_Strategy": "https://www.forrester.com/blogs/feed/",
-        "InfoQ": "https://feed.infoq.com/",
-        "Hacker_News": "https://hnrss.org/frontpage",
-        "The_Verge": "https://www.theverge.com/rss/index.xml",
-        "MIT_Innovation": "https://www.technologyreview.com/feed/",
-        "OpenAI_Blog": "https://openai.com/news/rss.xml",
-        "Towards_AI": "https://towardsai.net/feed",
         "Yahoo_Finance": "https://finance.yahoo.com/news/rssindex",
-        "CoinTelegraph": "https://cointelegraph.com/rss",
         "Economist_Business": "https://www.economist.com/business/rss.xml"
     },
     # Example: profession-specific overrides (add as needed)
@@ -43,9 +36,26 @@ RSS_SOURCES: Final[dict[str, dict[str, str]]] = {
         "Dezeen": "https://www.dezeen.com/feed/",
         "ArchDaily": "https://www.archdaily.com/rss",
         "InteriorDesign": "https://www.interiordesign.net/rss/",
-        "DesignBoom": "https://www.designboom.com/feed/"
+        "DesignBoom": "https://www.designboom.com/feed/",
+        "DesignMilk": "https://design-milk.com/category/interior-design/feed/",
+        "Apartment_Therapy": "https://www.apartmenttherapy.com/feed",
+        "Dwell": "https://www.dwell.com/feed/rss",
+        "Houzz": "https://www.houzz.com/magazine/feed",
+        "Architectural_Digest": "https://www.architecturaldigest.com/feed",
+        "Contemporist": "https://www.contemporist.com/feed/",
+        "Freshome": "https://www.freshome.com/feed/",
+        "Yanko_Design": "https://www.yankodesign.com/feed/",
+        "Design_Sponge": "https://www.designsponge.com/feed",
+        "Yellowtrace": "https://www.yellowtrace.com.au/feed/",
+        "Home_Design_Lover": "https://www.homedesignlover.com/feed/"
     },
     "solo_developer": {
+        "InfoQ": "https://feed.infoq.com/",
+        "Hacker_News": "https://hnrss.org/frontpage",
+        "The_Verge": "https://www.theverge.com/rss/index.xml",
+        "MIT_Innovation": "https://www.technologyreview.com/feed/",
+        "OpenAI_Blog": "https://openai.com/news/rss.xml",
+        "Towards_AI": "https://towardsai.net/feed",
         "IndieHackers": "https://www.indiehackers.com/feed",
         "ProductHunt": "https://www.producthunt.com/feed",
         "Hacker_News": "https://hnrss.org/frontpage"
@@ -93,23 +103,57 @@ MAX_SUMMARY_WORDS: Final[int] = 100
 # ============================================================================
 
 VALUABLE_KEYWORDS: Final[set[str]] = {
-    # Software & Entrepreneurship
-    'ai', 'saas', 'automation', 'microsaas', 'indie', 'solodev', 'trend',
-    'market', 'opportunity', 'revenue', 'growth', 'future', 'technology',
-    'software', 'dev', 'tool', 'platform', 'startup', 'innovation', 'aeo',
-    'scaling', 'efficiency', 'monetization', 'business', 'strategy',
-    'no-code', 'low-code', 'api', 'deployment', 'cloud', 'mvp', 'b2b',
-    'agentic', 'llm', 'framework', 'productivity', 'workflow',
-    # Finance & Investment
-    'stock', 'equity', 'nasdaq', 'sp500', 'fed', 'inflation', 'interest rate',
-    'dividend', 'portfolio', 'commodity', 'gold', 'silver', 'oil', 'energy',
-    'recession', 'economy', 'bull market', 'bear market', 'treasury', 'yield',
-    # Crypto & Web3
-    'crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'blockchain', 'defi',
-    'layer2', 'scaling', 'zk-proof', 'wallet', 'node', 'mining', 'halving',
-    'stablecoin', 'solana', 'altcoin', 'etf', 'liquidity', 'staking'
+    'strategy', 'market', 'innovation', 'growth', 'competitive',
+    'analysis', 'trend', 'insight', 'forecast', 'opportunity',
+    'business', 'economy', 'technology', 'leadership', 'management',
+    'customer', 'productivity', 'efficiency', 'transformation',
+    'disruption', 'sustainability', 'digital', 'data', 'ai', 'automation'
 }
 """Keywords indicating high-quality, strategic content."""
+
+# Optional profession-specific keyword overrides. Keys match profession keys
+# used by `get_rss_sources_for_profession` (string or Enum.value).
+VALUABLE_KEYWORDS_BY_PROFESSION: Final[dict[str, set[str]]] = {
+    "interior_designer": {
+        'interior', 'design', 'architecture', 'lighting', 'material',
+        'aesthetic', 'sustainability', 'furniture', 'renovation', 'design', 'interior', 'architecture', 'trend', 'aesthetic', 'concept',
+        'space', 'layout', 'material', 'color', 'lighting', 'furniture',
+        'decor', 'renovation', 'sustainability', 'functionality', 'innovation',
+        'style', 'ambiance', 'visual', 'environment', 'modern', 'classic'
+    },
+    "solo_developer": {
+        'ai', 'saas', 'automation', 'indie', 'solodev', 'startup',
+        'llm', 'dev', 'productivity', 'api', 'integration', 'no-code',
+        'low-code', 'scalability', 'cloud', 'microservices', 'devops',
+        'automation', 'efficiency', 'innovation', 'growth', 'market',
+    }
+}
+"""Optional profession-specific valuable keyword overrides."""
+
+
+def get_valuable_keywords_for_profession(profession: str | Enum) -> set[str]:
+    """
+    Return the merged set of valuable keywords for a profession.
+
+    If a profession has no overrides defined, this returns a shallow copy of
+    the default `VALUABLE_KEYWORDS` set to preserve backward compatibility.
+
+    Args:
+        profession: The profession key (e.g., 'interior_designer') or an
+            Enum with a `value` attribute.
+
+    Returns:
+        A set of keywords to use for feed relevance scoring.
+    """
+    if hasattr(profession, 'value'):
+        key = profession.value
+    else:
+        key = str(profession)
+
+    keywords = set(VALUABLE_KEYWORDS)
+    prof_keywords = VALUABLE_KEYWORDS_BY_PROFESSION.get(key, set())
+    keywords.update(prof_keywords)
+    return keywords
 
 NOISE_KEYWORDS: Final[set[str]] = {
     'crossword', 'puzzle', 'sudoku', 'quiz', 'recipe', 'lifestyle',

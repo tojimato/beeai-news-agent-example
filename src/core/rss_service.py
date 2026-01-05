@@ -16,6 +16,7 @@ from src.config.settings import (
     MAX_ENTRIES_PER_SOURCE,
     MAX_SUMMARY_WORDS,
     get_rss_sources_for_profession,
+    get_valuable_keywords_for_profession,
 )
 from src.utils.text_processing import clean_html, truncate_text
 
@@ -67,7 +68,12 @@ class RSSService:
         self.max_feed_search: int = max_feed_search or MAX_FEED_SEARCH
         self.max_entries_per_source: int = max_entries_per_source or MAX_ENTRIES_PER_SOURCE
         self.max_summary_words: int = max_summary_words or MAX_SUMMARY_WORDS
-        self.valuable_keywords: set[str] = valuable_keywords or VALUABLE_KEYWORDS
+        if valuable_keywords is not None:
+            self.valuable_keywords: set[str] = valuable_keywords
+        else:
+            # Use profession-aware keywords; default falls back to global set
+            prof_key = profession.value if profession else "default"
+            self.valuable_keywords = get_valuable_keywords_for_profession(prof_key)
         self.noise_keywords: set[str] = noise_keywords or NOISE_KEYWORDS
 
     async def fetch_all_feeds(self) -> str:

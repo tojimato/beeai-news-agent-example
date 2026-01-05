@@ -27,15 +27,12 @@ class DistillerPromptTemplate:
             "- Do not repeat links in the summary text.\n"
             "- No unnecessary explanation, only group title, summary, and links.\n"
             "\nExample:\n"
-            "- **AI and Technology Advancements**\n"
-            "  Recent developments in AI are accelerating innovation across industries. OpenAI and McKinsey highlight new applications and research breakthroughs.\n"
+            "- **[Example Title]**\n"
+            "  [Example Description.]\n"
             "  Links:\n"
-            "    https://www.mckinsey.com/capabilities/tech-and-ai/our-insights/elad-gil-on-the-future-of-ai\n"
-            "    https://openai.com/index/one-in-a-million-customers\n"
-            "    https://openai.com/index/hardening-atlas-against-prompt-injection\n"
-            "    https://openai.com/index/evaluating-chain-of-thought-monitorability\n"
-            "    https://openai.com/index/us-department-of-energy-collaboration\n"
-            "    https://openai.com/index/ai-literacy-resources-for-teens-and-parents\n"
+            "    https://www.example.com/ai-research-overview\n"
+            "    ..."
+            "    ..."
         )
         return prompt
 
